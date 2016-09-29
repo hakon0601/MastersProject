@@ -1,3 +1,5 @@
+import os
+
 import librosa
 import numpy as np
 from os import listdir
@@ -8,18 +10,20 @@ from os import listdir
 
 class DataLoader():
 
-    sampeling_rate = 1000
     included_vessels = ["ferry", "nansen", "sejong", "speedboat", "svendborgmaersk", "tanker", "sub"]
     classes = 7
-    test_percentage = 0.1
 
-    def __init__(self):
+    def __init__(self, test_percentage=0.1, sampeling_rate=1000):
+        self.sampeling_rate = sampeling_rate
+        self.test_percentage = test_percentage
         self.samples = []
         self.labels = []
 
 
     def load_data(self):
-        data_filenames = [f for f in listdir("data/AMTRecordings")]
+        root = os.path.dirname(os.path.realpath(__file__)) + "/Data/AMTRecordings"
+        for path, subdirs, files in os.walk(root):
+            data_filenames = [name for name in files]
         included_filenames = []
         for filename in data_filenames:
             for allowed_filename in self.included_vessels:
@@ -29,7 +33,7 @@ class DataLoader():
 
         for filename in included_filenames:
             for t in range(10):
-                y, sr = librosa.load("data/AMTRecordings/" + filename, sr=self.sampeling_rate, duration=1, offset=t)
+                y, sr = librosa.load(root + "/" + filename, sr=self.sampeling_rate, duration=1, offset=t)
                 self.samples.append(y)
                 label = np.zeros(self.classes)
                 for i in range(len(self.included_vessels)):
