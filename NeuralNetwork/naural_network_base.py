@@ -9,3 +9,7 @@ class NeuralNetworkBase():
     @abc.abstractmethod
     def construct_neural_network(self, samples, labels, samples_test, labels_test):
         return
+
+    @abc.abstractmethod
+    def train_neural_network(self, samples, labels, samples_test, labels_test):
+        return
