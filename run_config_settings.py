@@ -1,3 +1,9 @@
+'''
+Python 3.4.3
+librosa 0.4.3
+Tensorflow 0.6.0
+'''
+
 from math import ceil
 
 TEST_PERCENTAGE = 0.1

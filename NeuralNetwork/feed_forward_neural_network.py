@@ -1,6 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
 import sys
 import tensorflow as tf
 from NeuralNetwork.naural_network_base import NeuralNetworkBase
@@ -18,7 +15,6 @@ class FeedForwardNN(NeuralNetworkBase):
 
 
     def construct_neural_network(self, samples, labels, samples_test, labels_test):
-#        self.test_other_mnist_implementation(samples, labels, samples_test, labels_test)
 
         input_size = len(samples[0])
         output_size = len(labels[0])
@@ -69,36 +65,8 @@ class FeedForwardNN(NeuralNetworkBase):
             start = samples[:batch_size - len(end[0])], labels[:batch_size - len(end[1])]
             return end[0] + start[0], end[1] + start[1]
 
-
     def test_accuracy_of_solution(self, samples_test, labels_test):
         correct_prediction = tf.equal(tf.argmax(self.y, 1), tf.argmax(self.y_, 1))
 
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         print(self.sess.run(accuracy, feed_dict={self.x: samples_test, self.y_: labels_test}))
-
-    def test_other_mnist_implementation(self, samples, labels, samples_test, labels_test):
-        sess = tf.InteractiveSession()
-        input_size = len(samples[0])
-        output_size = len(labels[0])
-        # Create the model
-        x = tf.placeholder(tf.float32, [None, input_size])
-        W = tf.Variable(tf.zeros([input_size, output_size]))
-        b = tf.Variable(tf.zeros([output_size]))
-        y = tf.nn.softmax(tf.matmul(x, W) + b)
-
-        # Define loss and optimizer
-        y_ = tf.placeholder(tf.float32, [None, output_size])
-        cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y), reduction_indices=[1]))
-        train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
-
-        # Train
-        tf.initialize_all_variables().run()
-        for i in range(1000):
-            print(i)
-            batch_xs, batch_ys = self.get_next_batch(i, 100, samples, labels)
-            train_step.run({x: batch_xs, y_: batch_ys})
-
-        # Test trained model
-        correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-        print(accuracy.eval({x: samples_test, y_: labels_test}))

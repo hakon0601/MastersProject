@@ -5,7 +5,6 @@ import ttk
 import data_loader as dl
 from FeatureExtraction import short_time_fourier_transform, wavelet_transform, mel_frequency_cepstral_coefficients, spectral_density_estimation
 from NeuralNetwork import feed_forward_neural_network, convolutional_neural_network, recurrent_neural_network, radial_basis_function_neural_network
-from run_config_settings import *
 import main_program
 
 
