@@ -1,5 +1,5 @@
 import tkinter as tk
-
+from run_config_settings import *
 import ttk
 
 import data_loader as dl

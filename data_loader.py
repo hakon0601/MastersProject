@@ -55,4 +55,5 @@ class DataLoader():
             sys.stdout.write("\rLoading data %d%%" % floor((i + 1) * (100/len(included_filenames))))
             sys.stdout.flush()
         print()
+        #TODO pickle this to avoid loading each time
         return samples, labels, samples_test, labels_test
