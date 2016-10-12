@@ -15,9 +15,6 @@ from run_config_settings import *
 
 class DataLoader():
 
-    included_vessels = ["ferry", "nansen", "sejong", "speedboat", "svendborgmaersk", "tanker", "sub"]
-    classes = 7
-
     def __init__(self, test_percentage=0.1, sampeling_rate=1000):
         self.sampeling_rate = sampeling_rate
         self.test_percentage = test_percentage
@@ -33,7 +30,7 @@ class DataLoader():
             data_filenames = [name for name in files]
         included_filenames = []
         for filename in data_filenames:
-            for allowed_filename in self.included_vessels:
+            for allowed_filename in INCLUDED_VESSELS:
                 if filename.startswith(allowed_filename):
                     included_filenames.append(filename)
                     break
@@ -41,11 +38,12 @@ class DataLoader():
         for i in range(len(included_filenames)):
             for sample_nr in range(SAMPLES_PR_FILE): # All files have to be at least 10 sec
                 y, sr = librosa.load(root + "/" + included_filenames[i], sr=self.sampeling_rate, duration=SAMPLE_LENGTH, offset=sample_nr*SAMPLE_LENGTH)
-                label = np.zeros(self.classes)
-                for j in range(len(self.included_vessels)):
-                    if included_filenames[i].startswith(self.included_vessels[j]):
+                label = np.zeros(NR_OF_CLASSES)
+                for j in range(NR_OF_CLASSES):
+                    if included_filenames[i].startswith(INCLUDED_VESSELS[j]):
                         label[j] = 1
                         break
+                # Add to either training or test set
                 if ((SAMPLES_PR_FILE * i) + sample_nr) % sample_every_n == 0:
                     samples_test.append(y)
                     labels_test.append(label)

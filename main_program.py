@@ -17,7 +17,7 @@ class MainProgram():
         return self.feature_extractor.extract_features(samples), self.feature_extractor.extract_features(samples_test)
 
     def construct_neural_network(self, samples, labels, samples_test, labels_test):
-        self.neural_network.construct_neural_network(samples, labels, samples_test, labels_test)
+        self.neural_network.construct_neural_network(nr_of_hidden_layers=)
 
     def train_neural_network(self, samples, labels, samples_test, labels_test):
         self.neural_network.train_neural_network(samples, labels, samples_test, labels_test)

@@ -10,14 +10,14 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('data_dir', '/tmp/data/', 'Directory for storing data')
 
 class FeedForwardNN(NeuralNetworkBase):
-    def __init__(self):
-        pass
+    def __init__(self, nr_of_hidden_layers=1, hidden_layers_size=[10], activation_functions=[0, 0], bias=True):
+        self.bias = bias
+        self.nr_of_hidden_layers = nr_of_hidden_layers
+        self.hidden_layers_size = hidden_layers_size
+        self.activation_functions = activation_functions
 
 
-    def construct_neural_network(self, samples, labels, samples_test, labels_test):
-
-        input_size = len(samples[0])
-        output_size = len(labels[0])
+    def construct_neural_network(self, input_size=1000, output_size=7):
 
         self.input_tensor = tf.placeholder(tf.float32, [None, input_size])
 

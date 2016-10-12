@@ -3,7 +3,7 @@ from run_config_settings import *
 import ttk
 
 import data_loader as dl
-from FeatureExtraction import short_time_fourier_transform, wavelet_transform, mel_frequency_cepstral_coefficients, spectral_density_estimation
+from FeatureExtraction import short_time_fourier_transform, wavelet_transform, mel_frequency_cepstral_coefficients, spectral_density_estimation, no_feature_extraction
 from NeuralNetwork import feed_forward_neural_network, convolutional_neural_network, recurrent_neural_network, radial_basis_function_neural_network
 import main_program
 
@@ -13,7 +13,8 @@ class GUI(tk.Tk):
     feature_extraction_techniques = ["Short-time Fourier Transform",
                                      "Wavelet Transform",
                                      "Mel-frequency Cepstral Coefficients",
-                                     "Spectral Density Estimation"
+                                     "Spectral Density Estimation",
+                                     "No Feature Extraction"
                                      ]
     neural_network_types = ["Standard Feed-forward Neural Network",
                             "Convolutional Neural Network",
@@ -51,7 +52,7 @@ class GUI(tk.Tk):
         start_button = tk.Button(self, text="Start", width=20, command=self.start_program)
         start_button.pack()
 
-        self.start_program()
+        # self.start_program()
 
     def start_program(self):
         data_loader = dl.DataLoader(TEST_PERCENTAGE, SAMPELING_RATE)
@@ -64,6 +65,8 @@ class GUI(tk.Tk):
             feature_extractor = mel_frequency_cepstral_coefficients.MFCC()
         elif FEtype == self.feature_extraction_techniques[3]:
             feature_extractor = spectral_density_estimation.SpectralDensityEstimation()
+        elif FEtype == self.feature_extraction_techniques[4]:
+            feature_extractor = no_feature_extraction.NoFE()
 
         NNtype = self.NNbox.get()
         if NNtype == self.neural_network_types[0]:
