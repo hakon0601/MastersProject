@@ -1,3 +1,5 @@
+from run_config_settings import *
+
 
 
 class MainProgram():
@@ -9,15 +11,15 @@ class MainProgram():
 
         self.samples, self.labels, self.samples_test, self.labels_test = data_loader.load_data()
         self.processed_samples, self.processed_samples_test = self.extract_features(self.samples, self.samples_test)
-        self.construct_neural_network(self.processed_samples, self.labels, self.processed_samples_test, self.labels_test)
+        self.construct_neural_network(input_size=len(self.processed_samples[0]))
         self.train_neural_network(self.processed_samples, self.labels, self.processed_samples_test, self.labels_test)
         self.test_accuracy_of_solution(self.processed_samples_test, self.labels_test)
 
     def extract_features(self, samples, samples_test):
         return self.feature_extractor.extract_features(samples), self.feature_extractor.extract_features(samples_test)
 
-    def construct_neural_network(self, samples, labels, samples_test, labels_test):
-        self.neural_network.construct_neural_network(nr_of_hidden_layers=)
+    def construct_neural_network(self, input_size=1000):
+        self.neural_network.construct_neural_network(input_size=input_size)
 
     def train_neural_network(self, samples, labels, samples_test, labels_test):
         self.neural_network.train_neural_network(samples, labels, samples_test, labels_test)

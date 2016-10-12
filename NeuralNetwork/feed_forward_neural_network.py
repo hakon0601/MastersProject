@@ -10,23 +10,45 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('data_dir', '/tmp/data/', 'Directory for storing data')
 
 class FeedForwardNN(NeuralNetworkBase):
-    def __init__(self, nr_of_hidden_layers=1, hidden_layers_size=[10], activation_functions=[0, 0], bias=True):
+    def __init__(self, hidden_layers=[10], activation_functions_type=[0, 0], bias=False):
+        self.hidden_layers = hidden_layers
+        self.activation_functions_type = activation_functions_type
         self.bias = bias
-        self.nr_of_hidden_layers = nr_of_hidden_layers
-        self.hidden_layers_size = hidden_layers_size
-        self.activation_functions = activation_functions
 
 
-    def construct_neural_network(self, input_size=1000, output_size=7):
+    def construct_neural_network(self, input_size=1000):
+        output_size=NR_OF_CLASSES
+        self.layers_size = [input_size] + self.hidden_layers + [output_size]
+        self.layer_tensors = []
+        # self.input_tensor = tf.placeholder(tf.float32, [None, input_size])
 
-        self.input_tensor = tf.placeholder(tf.float32, [None, input_size])
+        # Creating a placeholder variable for keeping the values in each layer
+        for layer_size in self.layers_size:
+            self.layer_tensors.append(tf.placeholder(tf.float32, [None, layer_size]))
 
-        W_1 = tf.Variable(tf.zeros([input_size, output_size]))
-        b = tf.Variable(tf.zeros([output_size]))
 
-        self.activation_function = tf.nn.softmax(tf.matmul(self.input_tensor, W_1) + b)
+        # Generate weights from input through hidden layers to output
+        weights = []
+        for i in range(len(self.layers_size) - 1):
+            W = tf.Variable(tf.zeros([self.layers_size[i], self.hidden_layers[i+1]]))
+            weights.append(W)
 
-        self.output_tensor = tf.placeholder(tf.float32, [None, output_size]) # output layer size
+#        W_1 = tf.Variable(tf.zeros([input_size, output_size]))
+
+        # TODO fix bias support
+        if self.bias:
+            b = tf.Variable(tf.zeros([output_size]))
+
+        # Setting up activation functions between outgoing neurons and ongoing weights
+        self.activation_functions = []
+        for j in range(len(self.activation_functions_type)):
+            if self.activation_functions_type[j] == 0:
+               self.activation_functions.append(tf.nn.softmax(tf.matmul(self.layer_tensors[j], weights[j])))
+
+
+        # self.activation_function = tf.nn.softmax(tf.matmul(self.input_tensor, W_1) + b)
+
+        # self.output_tensor = tf.placeholder(tf.float32, [None, output_size]) # output layer size
 
         self.init = tf.initialize_all_variables()
 

@@ -73,7 +73,9 @@ class GUI(tk.Tk):
 
         NNtype = self.NNbox.get()
         if NNtype == self.neural_network_types[0]:
-            neural_network = feed_forward_neural_network.FeedForwardNN()
+            neural_network = feed_forward_neural_network.FeedForwardNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
+                                                                       activation_functions_type=list(map(int, self.activation_functions_entry.get().split())),
+                                                                       bias=self.bias_box.get())
         elif NNtype == self.neural_network_types[1]:
             neural_network = convolutional_neural_network.ConvolutionalNN()
         elif NNtype == self.neural_network_types[2]:
@@ -84,8 +86,6 @@ class GUI(tk.Tk):
         main_thread = main_program.MainProgram(feature_extractor, neural_network, data_loader=data_loader)
 
         
-
-
     def combo(self, frame, box_values, box_value):
         box = ttk.Combobox(frame, width=30, textvariable=box_value)
         box['values'] = box_values
@@ -114,14 +114,23 @@ class GUI(tk.Tk):
             pass
 
     def build_nn_options_menu(self):
-        self.nn_options_frame = tk.Frame(background='red')
+        self.nn_options_frame = tk.Frame()
         value_of_combo = self.NNbox.get()
         index = self.neural_network_types.index(value_of_combo)
         if index == 0:
-            nr_of_layers_value = tk.StringVar()
-            nr_of_layers_entry = tk.Entry(self.nn_options_frame, textvariable=nr_of_layers_value)
-            nr_of_layers_entry.pack()
-            print(nr_of_layers_entry.get())
+            tk.Label(self.nn_options_frame, text="Hidden layers").pack()
+            hidden_layers_value = tk.StringVar()
+            self.hidden_layers_entry = tk.Entry(self.nn_options_frame, textvariable=hidden_layers_value)
+            self.hidden_layers_entry.pack()
+            tk.Label(self.nn_options_frame, text="Activation functions").pack()
+            activation_functions_value = tk.StringVar()
+            self.activation_functions_entry = tk.Entry(self.nn_options_frame, textvariable=activation_functions_value)
+            self.activation_functions_entry.pack()
+            tk.Label(self.nn_options_frame, text="Bias").pack()
+            self.bias_value = tk.BooleanVar()
+            self.bias_box = self.combo(self.nn_options_frame, [False, True], self.bias_value)
+            self.bias_box.pack()
+
             # Build options menu for stft
         elif index == 1:
             pass
