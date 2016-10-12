@@ -1,5 +1,5 @@
 import tkinter as tk
-
+from run_config_settings import *
 import ttk
 
 import data_loader as dl
@@ -38,6 +38,7 @@ class GUI(tk.Tk):
         self.FEbox.pack()
         self.FEbox.bind("<<ComboboxSelected>>", self.newFEselection)
         FEboxgroup.pack(side=tk.LEFT)
+        self.build_fe_options_menu()
 
         NNboxgroup = tk.Frame(self)
         tk.Label(self, text="Neural Network type").pack()
@@ -48,10 +49,12 @@ class GUI(tk.Tk):
         NNboxgroup.pack(side=tk.RIGHT)
 
         button_group = tk.Frame(self)
-        start_button = tk.Button(self, text="Start", width=20, command=self.start_program)
+        start_button = tk.Button(button_group, text="Start", width=20, command=self.start_program)
         start_button.pack()
+        button_group.pack()
+        self.build_nn_options_menu()
 
-        self.start_program()
+        #self.start_program()
 
     def start_program(self):
         data_loader = dl.DataLoader(TEST_PERCENTAGE, SAMPELING_RATE)
@@ -88,12 +91,41 @@ class GUI(tk.Tk):
 
 
     def newFEselection(self, event):
-        self.value_of_combo = self.FEbox.get()
-        print(self.value_of_combo)
+        value_of_combo = self.FEbox.get()
+        self.build_fe_options_menu()
+        print(value_of_combo)
 
     def newNNselection(self, event):
-        self.value_of_combo = self.NNbox.get()
-        print(self.value_of_combo)
+        value_of_combo = self.NNbox.get()
+        self.build_nn_options_menu()
+        print(value_of_combo)
+
+    def build_fe_options_menu(self):
+        fe_options_frame = tk.Frame()
+        value_of_combo = self.FEbox.get()
+        index = self.feature_extraction_techniques.index(value_of_combo)
+        if index == 0:
+            pass
+            # Build options menu for stft
+        elif index == 1:
+            pass
+
+    def build_nn_options_menu(self):
+        self.nn_options_frame = tk.Frame(background='red')
+        value_of_combo = self.NNbox.get()
+        index = self.neural_network_types.index(value_of_combo)
+        if index == 0:
+            nr_of_layers_value = tk.StringVar()
+            nr_of_layers_entry = tk.Entry(self.nn_options_frame, textvariable=nr_of_layers_value)
+            nr_of_layers_entry.pack()
+            print(nr_of_layers_entry.get())
+            # Build options menu for stft
+        elif index == 1:
+            pass
+
+        self.nn_options_frame.pack(side=tk.RIGHT)
+
+
 
 
     def center_window(self):
