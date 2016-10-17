@@ -10,11 +10,11 @@ import main_program
 
 class GUI(tk.Tk):
 
-    feature_extraction_techniques = ["Short-time Fourier Transform",
+    feature_extraction_techniques = ["No Feature Extraction",
+                                     "Short-time Fourier Transform",
                                      "Wavelet Transform",
                                      "Mel-frequency Cepstral Coefficients",
-                                     "Spectral Density Estimation",
-                                     "No Feature Extraction"
+                                     "Spectral Density Estimation"
                                      ]
     neural_network_types = ["Standard Feed-forward Neural Network",
                             "Convolutional Neural Network",
@@ -55,13 +55,13 @@ class GUI(tk.Tk):
         button_group.pack()
         self.build_nn_options_menu()
 
-        #self.start_program()
+        self.start_program()
 
     def start_program(self):
         data_loader = dl.DataLoader(TEST_PERCENTAGE, SAMPELING_RATE)
         FEtype = self.FEbox.get()
         if FEtype == self.feature_extraction_techniques[0]:
-            feature_extractor = short_time_fourier_transform.STFT()
+            feature_extractor = no_feature_extraction.NoFE()
         elif FEtype == self.feature_extraction_techniques[1]:
             feature_extractor = wavelet_transform.WaveletTransform()
         elif FEtype == self.feature_extraction_techniques[2]:
@@ -69,13 +69,15 @@ class GUI(tk.Tk):
         elif FEtype == self.feature_extraction_techniques[3]:
             feature_extractor = spectral_density_estimation.SpectralDensityEstimation()
         elif FEtype == self.feature_extraction_techniques[4]:
-            feature_extractor = no_feature_extraction.NoFE()
+            feature_extractor = short_time_fourier_transform.STFT()
 
         NNtype = self.NNbox.get()
         if NNtype == self.neural_network_types[0]:
             neural_network = feed_forward_neural_network.FeedForwardNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
                                                                        activation_functions_type=list(map(int, self.activation_functions_entry.get().split())),
-                                                                       bias=self.bias_box.get())
+                                                                       bias=self.bias_box.get(),
+                                                                       learning_rate=float(self.learning_rate_entry.get()),
+                                                                       training_iterations=int(self.training_iterations_entry.get()))
         elif NNtype == self.neural_network_types[1]:
             neural_network = convolutional_neural_network.ConvolutionalNN()
         elif NNtype == self.neural_network_types[2]:
@@ -120,16 +122,29 @@ class GUI(tk.Tk):
         if index == 0:
             tk.Label(self.nn_options_frame, text="Hidden layers").pack()
             hidden_layers_value = tk.StringVar()
+            hidden_layers_value.set("3")
             self.hidden_layers_entry = tk.Entry(self.nn_options_frame, textvariable=hidden_layers_value)
             self.hidden_layers_entry.pack()
             tk.Label(self.nn_options_frame, text="Activation functions").pack()
             activation_functions_value = tk.StringVar()
+            activation_functions_value.set("1 1")
             self.activation_functions_entry = tk.Entry(self.nn_options_frame, textvariable=activation_functions_value)
             self.activation_functions_entry.pack()
             tk.Label(self.nn_options_frame, text="Bias").pack()
             self.bias_value = tk.BooleanVar()
             self.bias_box = self.combo(self.nn_options_frame, [False, True], self.bias_value)
             self.bias_box.pack()
+            tk.Label(self.nn_options_frame, text="Learning rate").pack()
+            learning_rate_value = tk.DoubleVar()
+            learning_rate_value.set(LEARNING_RATE)
+            self.learning_rate_entry = tk.Entry(self.nn_options_frame, textvariable=learning_rate_value)
+            self.learning_rate_entry.pack()
+            tk.Label(self.nn_options_frame, text="Training iterations").pack()
+            training_iterations_value = tk.IntVar()
+            training_iterations_value.set(TRAINING_ITERATIONS)
+            self.training_iterations_entry = tk.Entry(self.nn_options_frame, textvariable=training_iterations_value)
+            self.training_iterations_entry.pack()
+
 
             # Build options menu for stft
         elif index == 1:

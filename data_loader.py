@@ -12,15 +12,15 @@ from run_config_settings import *
 # Sample, Label
 # Label: [Ferry, Nansen, Submarine, Sejong, Speedboat, SvendborgMaersk, Tanker]
 
-
 class DataLoader():
 
     def __init__(self, test_percentage=0.1, sampeling_rate=1000):
         self.sampeling_rate = sampeling_rate
         self.test_percentage = test_percentage
 
-
     def load_data(self):
+        if MOCK_DATA:
+            return self.load_mock_data()
         samples = []
         labels = []
         samples_test = []
@@ -55,3 +55,28 @@ class DataLoader():
         print()
         #TODO pickle this to avoid loading each time
         return samples, labels, samples_test, labels_test
+
+    def load_mock_data(self):
+        # Autoencoder
+        # samples = [np.array(self.bitfield(i)) for i in range(8)]
+        # labels = samples
+
+        samples = [np.array([1, 0]) if i%2==0 else np.array([0, 1])  for i in range(20)] + [np.array([0, 0]) for i in range(10)]
+        labels = [[1, 0] if i%2==0 else [0, 1]  for i in range(20)] + [[0, 1] for i in range(10)]
+        '''
+        samples = [[0 for i in range(SAMPELING_RATE//2)] + [1 for j in range(SAMPELING_RATE//2)] for k in range(NR_OF_CLASSES*10*SAMPLES_PR_FILE//2)]
+        samples += [[1 for i in range(SAMPELING_RATE//2)] + [0 for j in range(SAMPELING_RATE//2)] for k in range(NR_OF_CLASSES*10*SAMPLES_PR_FILE//2)]
+        labels = [[1, 0] for i in range(NR_OF_CLASSES*10*SAMPLES_PR_FILE//2)] + [[0, 1] for i in range(NR_OF_CLASSES*10*SAMPLES_PR_FILE//2)]
+        '''
+        samples_test = samples
+        labels_test = labels
+
+        return samples, labels, samples_test, labels_test
+
+    def bitfield(self, n):
+        bitarray = [int(digit) for digit in bin(n)[2:]]
+        bitarray = ([0]*(3 - len(bitarray))) + bitarray
+        return bitarray
+
+
+
