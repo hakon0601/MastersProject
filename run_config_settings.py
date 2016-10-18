@@ -15,7 +15,11 @@ NR_OF_FILES = 85
 SAMPLES_PR_FILE = 5
 # 85 files in total
 SAMPLE_LENGTH = 1 # sec
+
 MOCK_DATA = True
+
+if NR_OF_CLASSES != len(INCLUDED_VESSELS):
+    raise ValueError
 
 if SAMPLES_PR_FILE * SAMPLE_LENGTH > 10:
     raise ValueError
@@ -23,4 +27,6 @@ if SAMPLES_PR_FILE * SAMPLE_LENGTH > 10:
 BATCH_SIZE = 1
 TRAINING_ITERATIONS = ceil(NR_OF_FILES * SAMPLES_PR_FILE / BATCH_SIZE) # To ensure all samples being used in training
 TRAINING_ITERATIONS = 100
-LEARNING_RATE = 0.5
+LEARNING_RATE = 0.1
+
+ACTIVATION_FUNCTIONS = "1 1"

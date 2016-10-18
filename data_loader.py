@@ -57,8 +57,9 @@ class DataLoader():
         return samples, labels, samples_test, labels_test
 
     def load_mock_data(self):
-        # Autoencoder
-        # samples = [np.array(self.bitfield(i)) for i in range(8)]
+
+        # Autoencoder Make sure you dont test accuracy using a one-hot approach
+        # samples = [np.array(self.bitfield(i, 3)) for i in range(8)]
         # labels = samples
 
         samples = [np.array([1, 0]) if i%2==0 else np.array([0, 1])  for i in range(20)] + [np.array([0, 0]) for i in range(10)]
@@ -73,9 +74,9 @@ class DataLoader():
 
         return samples, labels, samples_test, labels_test
 
-    def bitfield(self, n):
+    def bitfield(self, n, k):
         bitarray = [int(digit) for digit in bin(n)[2:]]
-        bitarray = ([0]*(3 - len(bitarray))) + bitarray
+        bitarray = ([0]*(k - len(bitarray))) + bitarray
         return bitarray
 
 

@@ -55,7 +55,7 @@ class GUI(tk.Tk):
         button_group.pack()
         self.build_nn_options_menu()
 
-        self.start_program()
+        # self.start_program()
 
     def start_program(self):
         data_loader = dl.DataLoader(TEST_PERCENTAGE, SAMPELING_RATE)
@@ -75,7 +75,7 @@ class GUI(tk.Tk):
         if NNtype == self.neural_network_types[0]:
             neural_network = feed_forward_neural_network.FeedForwardNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
                                                                        activation_functions_type=list(map(int, self.activation_functions_entry.get().split())),
-                                                                       bias=self.bias_box.get(),
+                                                                       enable_bias=True if self.bias_box.get() == "True" else False,
                                                                        learning_rate=float(self.learning_rate_entry.get()),
                                                                        training_iterations=int(self.training_iterations_entry.get()))
         elif NNtype == self.neural_network_types[1]:
@@ -122,12 +122,12 @@ class GUI(tk.Tk):
         if index == 0:
             tk.Label(self.nn_options_frame, text="Hidden layers").pack()
             hidden_layers_value = tk.StringVar()
-            hidden_layers_value.set("3")
+            hidden_layers_value.set("")
             self.hidden_layers_entry = tk.Entry(self.nn_options_frame, textvariable=hidden_layers_value)
             self.hidden_layers_entry.pack()
             tk.Label(self.nn_options_frame, text="Activation functions").pack()
             activation_functions_value = tk.StringVar()
-            activation_functions_value.set("1 1")
+            activation_functions_value.set(ACTIVATION_FUNCTIONS)
             self.activation_functions_entry = tk.Entry(self.nn_options_frame, textvariable=activation_functions_value)
             self.activation_functions_entry.pack()
             tk.Label(self.nn_options_frame, text="Bias").pack()
