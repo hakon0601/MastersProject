@@ -20,7 +20,7 @@ class GUI(tk.Tk):
                             "Convolutional Neural Network",
                             "Recurrent Neural Network",
                             "Radial Basis Function Network"
-                                     ]
+                             ]
 
 
     def __init__(self, *args, **kwargs):
@@ -87,7 +87,6 @@ class GUI(tk.Tk):
 
         main_thread = main_program.MainProgram(feature_extractor, neural_network, data_loader=data_loader)
 
-        
     def combo(self, frame, box_values, box_value):
         box = ttk.Combobox(frame, width=30, textvariable=box_value)
         box['values'] = box_values
@@ -152,9 +151,6 @@ class GUI(tk.Tk):
 
         self.nn_options_frame.pack(side=tk.RIGHT)
 
-
-
-
     def center_window(self):
         ws = self.winfo_screenwidth()  # width of the screen
         hs = self.winfo_screenheight()  # height of the screen
@@ -163,8 +159,6 @@ class GUI(tk.Tk):
         x = (ws/2) - (w/2)
         y = (hs/2) - (h/2)
         self.geometry('%dx%d+%d+%d' % (w, h, x, y))
-
-
 
 
 
