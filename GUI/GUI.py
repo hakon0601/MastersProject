@@ -77,7 +77,7 @@ class GUI(tk.Tk):
                                                                        activation_functions_type=list(map(int, self.activation_functions_entry.get().split())),
                                                                        enable_bias=True if self.bias_box.get() == "True" else False,
                                                                        learning_rate=float(self.learning_rate_entry.get()),
-                                                                       training_iterations=int(self.training_iterations_entry.get()))
+                                                                       epocs=int(self.training_iterations_entry.get()))
         elif NNtype == self.neural_network_types[1]:
             neural_network = convolutional_neural_network.ConvolutionalNN()
         elif NNtype == self.neural_network_types[2]:
@@ -121,7 +121,7 @@ class GUI(tk.Tk):
         if index == 0:
             tk.Label(self.nn_options_frame, text="Hidden layers").pack()
             hidden_layers_value = tk.StringVar()
-            hidden_layers_value.set("")
+            hidden_layers_value.set(HIDDEN_LAYERS)
             self.hidden_layers_entry = tk.Entry(self.nn_options_frame, textvariable=hidden_layers_value)
             self.hidden_layers_entry.pack()
             tk.Label(self.nn_options_frame, text="Activation functions").pack()
@@ -140,7 +140,7 @@ class GUI(tk.Tk):
             self.learning_rate_entry.pack()
             tk.Label(self.nn_options_frame, text="Training iterations").pack()
             training_iterations_value = tk.IntVar()
-            training_iterations_value.set(TRAINING_ITERATIONS)
+            training_iterations_value.set(EPOCS)
             self.training_iterations_entry = tk.Entry(self.nn_options_frame, textvariable=training_iterations_value)
             self.training_iterations_entry.pack()
 

@@ -1,5 +1,5 @@
 import os
-
+import pickle
 import librosa
 import numpy as np
 from os import listdir
@@ -8,6 +8,7 @@ from math import floor
 import sys
 
 from run_config_settings import *
+from tensorflow.examples.tutorials.mnist import input_data
 
 # Sample, Label
 # Label: [Ferry, Nansen, Submarine, Sejong, Speedboat, SvendborgMaersk, Tanker]
@@ -21,6 +22,11 @@ class DataLoader():
     def load_data(self):
         if MOCK_DATA:
             return self.load_mock_data()
+        data_dict = self.pickle_load()
+        parameter_key = self.get_parameter_key()
+        if USE_PRELOADED_DATA:
+            if parameter_key in data_dict:
+                return data_dict[parameter_key]
         samples = []
         labels = []
         samples_test = []
@@ -36,8 +42,12 @@ class DataLoader():
                     break
         sample_every_n = int(self.test_percentage * 100)
         for i in range(len(included_filenames)):
+            y, sr = librosa.load(root + "/" + included_filenames[i])
+            # duration = librosa.get_duration(y=y, sr=sr)
+            duration = 10.0
+            offset = (duration - SAMPLE_LENGTH) / (SAMPLES_PR_FILE - 1)
             for sample_nr in range(SAMPLES_PR_FILE): # All files have to be at least 10 sec
-                y, sr = librosa.load(root + "/" + included_filenames[i], sr=self.sampeling_rate, duration=SAMPLE_LENGTH, offset=sample_nr*SAMPLE_LENGTH)
+                y, sr = librosa.load(root + "/" + included_filenames[i], sr=self.sampeling_rate, duration=SAMPLE_LENGTH, offset=sample_nr*offset)
                 label = np.zeros(NR_OF_CLASSES)
                 for j in range(NR_OF_CLASSES):
                     if included_filenames[i].startswith(INCLUDED_VESSELS[j]):
@@ -53,10 +63,14 @@ class DataLoader():
             sys.stdout.write("\rLoading data %d%%" % floor((i + 1) * (100/len(included_filenames))))
             sys.stdout.flush()
         print()
-        #TODO pickle this to avoid loading each time
+        # Pickle data to avoid loading each time
+        data_dict[parameter_key] = [samples, labels, samples_test, labels_test]
+        self.pickle_save(data_dict)
         return samples, labels, samples_test, labels_test
 
     def load_mock_data(self):
+
+        return self.load_mnist()
 
         # Autoencoder Make sure you dont test accuracy using a one-hot approach
         # samples = [np.array(self.bitfield(i, 3)) for i in range(8)]
@@ -74,10 +88,33 @@ class DataLoader():
 
         return samples, labels, samples_test, labels_test
 
+    def load_mnist(self):
+        mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
+        samples = mnist.train.images
+        labels = mnist.train.labels
+        samples_test = mnist.test.images
+        labels_test = mnist.test.labels
+        return samples, labels, samples_test, labels_test
+
+
     def bitfield(self, n, k):
         bitarray = [int(digit) for digit in bin(n)[2:]]
         bitarray = ([0]*(k - len(bitarray))) + bitarray
         return bitarray
+
+    def pickle_save(self, data_dict):
+        # Adding the most recent data to the file
+        with open('objs.pickle', 'wb') as f:
+            pickle.dump(data_dict, f)
+
+    def pickle_load(self):
+        with open('objs.pickle', 'rb') as f:
+            return pickle.load(f)
+
+    def get_parameter_key(self):
+        return str(NR_OF_CLASSES) + str(TEST_PERCENTAGE) + str(SAMPELING_RATE) + str(SAMPLES_PR_FILE) + str(SAMPLE_LENGTH)
+
+
 
 
 
