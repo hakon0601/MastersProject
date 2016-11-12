@@ -25,7 +25,7 @@ USE_PRELOADED_DATA = True
 # if SAMPLES_PR_FILE * SAMPLE_LENGTH > 10:
 #     raise ValueError
 
-BATCH_SIZE = 10
+BATCH_SIZE = 100
 EPOCS = ceil(NR_OF_FILES * SAMPLES_PR_FILE / BATCH_SIZE) # To ensure all samples being used in training
 EPOCS = 50
 LEARNING_RATE = 0.001

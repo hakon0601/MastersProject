@@ -63,13 +63,14 @@ class GUI(tk.Tk):
         if FEtype == self.feature_extraction_techniques[0]:
             feature_extractor = no_feature_extraction.NoFE()
         elif FEtype == self.feature_extraction_techniques[1]:
-            feature_extractor = wavelet_transform.WaveletTransform()
-        elif FEtype == self.feature_extraction_techniques[2]:
-            feature_extractor = mel_frequency_cepstral_coefficients.MFCC()
-        elif FEtype == self.feature_extraction_techniques[3]:
-            feature_extractor = spectral_density_estimation.SpectralDensityEstimation()
-        elif FEtype == self.feature_extraction_techniques[4]:
             feature_extractor = short_time_fourier_transform.STFT()
+        elif FEtype == self.feature_extraction_techniques[2]:
+            feature_extractor = wavelet_transform.WaveletTransform()
+        elif FEtype == self.feature_extraction_techniques[3]:
+            feature_extractor = mel_frequency_cepstral_coefficients.MFCC()
+        elif FEtype == self.feature_extraction_techniques[4]:
+            feature_extractor = spectral_density_estimation.SpectralDensityEstimation()
+
 
         NNtype = self.NNbox.get()
         if NNtype == self.neural_network_types[0]:

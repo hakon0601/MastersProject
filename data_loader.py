@@ -24,6 +24,7 @@ class DataLoader():
             return self.load_mock_data()
         data_dict = self.pickle_load()
         parameter_key = self.get_parameter_key()
+        print("Parameter key", parameter_key)
         if USE_PRELOADED_DATA:
             if parameter_key in data_dict:
                 return data_dict[parameter_key]
