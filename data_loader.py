@@ -43,7 +43,7 @@ class DataLoader():
                     break
         sample_every_n = int(self.test_percentage * 100)
         for i in range(len(included_filenames)):
-            y, sr = librosa.load(root + "/" + included_filenames[i])
+            # y, sr = librosa.load(root + "/" + included_filenames[i])
             # duration = librosa.get_duration(y=y, sr=sr)
             duration = 10.0
             offset = (duration - SAMPLE_LENGTH) / (SAMPLES_PR_FILE - 1)
@@ -55,7 +55,8 @@ class DataLoader():
                         label[j] = 1
                         break
                 # Add to either training or test set
-                if ((SAMPLES_PR_FILE * i) + sample_nr) % sample_every_n == 0:
+                # if ((SAMPLES_PR_FILE * i) + sample_nr) % sample_every_n == 0:
+                if (i % 10) == 0:
                     samples_test.append(y)
                     labels_test.append(label)
                 else:
