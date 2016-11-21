@@ -2,7 +2,7 @@ import os
 import pickle
 import librosa
 import numpy as np
-from os import listdir
+from random import shuffle
 from math import floor
 
 import sys
@@ -25,43 +25,33 @@ class DataLoader():
         data_dict = self.pickle_load()
         parameter_key = self.get_parameter_key()
         print("Parameter key", parameter_key)
-        if USE_PRELOADED_DATA:
-            if parameter_key in data_dict:
-                return data_dict[parameter_key]
+        if USE_PRELOADED_DATA and parameter_key in data_dict:
+            return data_dict[parameter_key]
+
+        included_filenames = self.filter_only_included_vessels(self.get_data_filenames())
+        shuffle(included_filenames) # Use one random file from each type as the testing set
+
         samples = []
         labels = []
         samples_test = []
         labels_test = []
-        root = os.path.dirname(os.path.realpath(__file__)) + "/Data/AMTRecordings"
-        for path, subdirs, files in os.walk(root):
-            data_filenames = [name for name in files]
-        included_filenames = []
-        for filename in data_filenames:
-            for allowed_filename in INCLUDED_VESSELS:
-                if filename.startswith(allowed_filename):
-                    included_filenames.append(filename)
-                    break
-        sample_every_n = int(self.test_percentage * 100)
+
+        # sample_every_n = int(self.test_percentage * 100)
+        files_used_for_testing = []
         for i in range(len(included_filenames)):
-            # y, sr = librosa.load(root + "/" + included_filenames[i])
-            # duration = librosa.get_duration(y=y, sr=sr)
-            duration = 10.0
-            offset = (duration - SAMPLE_LENGTH) / (SAMPLES_PR_FILE - 1)
-            for sample_nr in range(SAMPLES_PR_FILE): # All files have to be at least 10 sec
-                y, sr = librosa.load(root + "/" + included_filenames[i], sr=self.sampeling_rate, duration=SAMPLE_LENGTH, offset=sample_nr*offset)
-                label = np.zeros(NR_OF_CLASSES)
-                for j in range(NR_OF_CLASSES):
-                    if included_filenames[i].startswith(INCLUDED_VESSELS[j]):
-                        label[j] = 1
-                        break
-                # Add to either training or test set
-                # if ((SAMPLES_PR_FILE * i) + sample_nr) % sample_every_n == 0:
-                if (i % 10) == 0:
-                    samples_test.append(y)
-                    labels_test.append(label)
-                else:
-                    samples.append(y)
-                    labels.append(label)
+            samples_from_one_file, labels_from_one_file = self.load_samples_from_file(root=DATA_PATH, filename=included_filenames[i])
+            if included_filenames[i][:4] not in files_used_for_testing: # The four first letters of a filename is type identificator
+                files_used_for_testing.append(included_filenames[i][:4])
+                samples_test += samples_from_one_file
+                labels_test += labels_from_one_file
+            else:
+                samples += samples_from_one_file
+                labels += labels_from_one_file
+                if NOISE_ENABLED:
+                    for j in range(NR_OF_NOISY_SAMPLES_PR_SAMPLE):
+                        samples += self.create_noisy_sample(samples_from_one_file)
+                        labels += labels_from_one_file
+
             sys.stdout.write("\rLoading data %d%%" % floor((i + 1) * (100/len(included_filenames))))
             sys.stdout.flush()
         print()
@@ -115,6 +105,44 @@ class DataLoader():
 
     def get_parameter_key(self):
         return str(NR_OF_CLASSES) + str(TEST_PERCENTAGE) + str(SAMPELING_RATE) + str(SAMPLES_PR_FILE) + str(SAMPLE_LENGTH)
+
+    def load_samples_from_file(self, root, filename):
+        samples = []
+        labels = []
+        # y, sr = librosa.load(root + "/" + included_filenames[i])
+        # duration = librosa.get_duration(y=y, sr=sr)
+        duration = 10.0
+        offset = (duration - SAMPLE_LENGTH) / (SAMPLES_PR_FILE - 1)
+        for sample_nr in range(SAMPLES_PR_FILE):
+            y, sr = librosa.load(root + "/" + filename, sr=self.sampeling_rate, duration=SAMPLE_LENGTH, offset=sample_nr*offset)
+            label = np.zeros(NR_OF_CLASSES)
+            for j in range(NR_OF_CLASSES):
+                if filename.startswith(INCLUDED_VESSELS[j]):
+                    label[j] = 1
+                    break
+            samples.append(y)
+            labels.append(label)
+        return samples, labels
+
+    def get_data_filenames(self):
+        for path, subdirs, files in os.walk(DATA_PATH):
+            return [name for name in files]
+
+    def filter_only_included_vessels(self, all_data_filenames):
+        included_filenames = []
+        for filename in all_data_filenames:
+            for allowed_filename in INCLUDED_VESSELS:
+                if filename.startswith(allowed_filename):
+                    included_filenames.append(filename)
+                    break
+        return included_filenames
+
+    def create_noisy_sample(self, samples_from_one_file):
+        noisy_samples = []
+        for i in range(len(samples_from_one_file)):
+            noise = np.random.normal(np.mean(samples_from_one_file[i]), np.std(samples_from_one_file[i]), len(samples_from_one_file[i]))
+            noisy_samples.append(samples_from_one_file[i] + noise)
+        return noisy_samples
 
 
 

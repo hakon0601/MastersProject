@@ -55,14 +55,16 @@ class FeedForwardNN(NeuralNetworkBase):
 
         # self.activation_function = tf.nn.softmax(tf.matmul(self.input_tensor, W_1) + b)
 
-        self.activation_model = self.model()
+        self.keep_prob = tf.placeholder(tf.float32)
+
+        self.activation_model = self.model(predict=False)
 
         self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.activation_model, self.layer_tensors[-1]))
         # self.cost = tf.reduce_mean(-tf.reduce_sum(self.layer_tensors[-1] * tf.log(self.activation_model), reduction_indices=[1]))
         # self.train_step = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.cost)
         self.train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost)
         # self.predict_op = tf.argmax(self.activation_model, 1)
-        self.predict_op = self.model()
+        self.predict_op = self.model(predict=True)
 
         self.init = tf.initialize_all_variables()
 
@@ -81,7 +83,7 @@ class FeedForwardNN(NeuralNetworkBase):
                 # batch_xs, batch_ys = self.get_next_batch(i*BATCH_SIZE, BATCH_SIZE, samples, labels)
                 batch_xs, batch_ys = self.get_random_batch(BATCH_SIZE, samples, labels)
                 # self.sess.run(self.train_step, feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys})
-                _, c = self.sess.run([self.train_step, self.cost], feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys})
+                _, c = self.sess.run([self.train_step, self.cost], feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys, self.keep_prob: DROPOUT})
 
                 avg_cost += c / total_batch
             if epoch % 1 == 0:
@@ -121,11 +123,11 @@ class FeedForwardNN(NeuralNetworkBase):
         correct_predictions = tf.equal(index_of_highest_output_neurons, index_of_correct_label)
         # Computes the average of a list of booleans
         accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
-        accuracy_test = self.sess.run(accuracy, feed_dict={self.layer_tensors[0]: samples_test, self.layer_tensors[-1]: labels_test})
-        accuracy_training = self.sess.run(accuracy, feed_dict={self.layer_tensors[0]: samples, self.layer_tensors[-1]: labels})
+        accuracy_test = self.sess.run(accuracy, feed_dict={self.layer_tensors[0]: samples_test, self.layer_tensors[-1]: labels_test, self.keep_prob: 1})
+        accuracy_training = self.sess.run(accuracy, feed_dict={self.layer_tensors[0]: samples, self.layer_tensors[-1]: labels, self.keep_prob: 1})
         print("Accuracy test:", accuracy_test, "Accuracy training:", accuracy_training)
 
-    def model(self):
+    def model(self, predict=False):
         if len(self.layers_size) < 3:
             if self.enable_bias:
                 return tf.matmul(self.layer_tensors[0], self.weights[0]) + self.bias[0]
@@ -143,10 +145,11 @@ class FeedForwardNN(NeuralNetworkBase):
             else:
                 self.activations.append(tf.nn.relu(tf.matmul(self.activations[i-1], self.weights[i])))
 
+        self.h_fc1_drop = tf.nn.dropout(self.activations[-1], self.keep_prob)
         if self.enable_bias:
-            return tf.matmul(self.activations[-1], self.weights[-1] + self.bias[-1])
+            return tf.matmul(self.h_fc1_drop, self.weights[-1] + self.bias[-1])
         else:
-            return tf.matmul(self.activations[-1], self.weights[-1])
+            return tf.matmul(self.h_fc1_drop, self.weights[-1])
 
 
     def print_weights(self):
