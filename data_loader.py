@@ -19,7 +19,7 @@ class DataLoader():
         self.sampeling_rate = sampeling_rate
         self.test_percentage = test_percentage
 
-    def load_data(self):
+    def load_data(self, recurrent=False):
         if MOCK_DATA:
             return self.load_mock_data()
         data_dict = self.pickle_load()
@@ -39,7 +39,7 @@ class DataLoader():
         # sample_every_n = int(self.test_percentage * 100)
         files_used_for_testing = []
         for i in range(len(included_filenames)):
-            samples_from_one_file, labels_from_one_file = self.load_samples_from_file(root=DATA_PATH, filename=included_filenames[i])
+            samples_from_one_file, labels_from_one_file = self.load_samples_from_file(root=DATA_PATH, filename=included_filenames[i], recurrent=recurrent)
             if included_filenames[i][:4] not in files_used_for_testing: # The four first letters of a filename is type identificator
                 files_used_for_testing.append(included_filenames[i][:4])
                 samples_test += samples_from_one_file
@@ -106,22 +106,29 @@ class DataLoader():
     def get_parameter_key(self):
         return str(NR_OF_CLASSES) + str(TEST_PERCENTAGE) + str(SAMPELING_RATE) + str(SAMPLES_PR_FILE) + str(SAMPLE_LENGTH)
 
-    def load_samples_from_file(self, root, filename):
+    def load_samples_from_file(self, root, filename, recurrent):
         samples = []
         labels = []
         # y, sr = librosa.load(root + "/" + included_filenames[i])
         # duration = librosa.get_duration(y=y, sr=sr)
         duration = 10.0
         offset = (duration - SAMPLE_LENGTH) / (SAMPLES_PR_FILE - 1)
+
         for sample_nr in range(SAMPLES_PR_FILE):
-            y, sr = librosa.load(root + "/" + filename, sr=self.sampeling_rate, duration=SAMPLE_LENGTH, offset=sample_nr*offset)
             label = np.zeros(NR_OF_CLASSES)
             for j in range(NR_OF_CLASSES):
                 if filename.startswith(INCLUDED_VESSELS[j]):
                     label[j] = 1
                     break
-            samples.append(y)
             labels.append(label)
+            if recurrent:
+                y, sr = librosa.load(root + "/" + filename, sr=self.sampeling_rate, duration=duration)
+                samples.append(y)
+                break
+            else:
+                y, sr = librosa.load(root + "/" + filename, sr=self.sampeling_rate, duration=SAMPLE_LENGTH, offset=sample_nr*offset)
+                samples.append(y)
+
         return samples, labels
 
     def get_data_filenames(self):

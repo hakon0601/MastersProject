@@ -7,15 +7,18 @@ TODO
 
 * Create option not to read all files in dataloader
 
-* Dropout
-* Støye til alle samples, noise reducing auto-encoder
-* Test data skille på filer
 * Kryssvalidering
-
-
-
-* Flere modeller, RNN, LSTM, CNN (Spektogram, gir ikke mening uten?), RBFN
-* Legg til støy-data og dropout
 
 * Finne ut hvor høy feilmargin mennesker har.
 
+* Flere modeller, RNN, LSTM, CNN (Spektogram, gir ikke mening uten?), RBFN
+
+* Do activation function in gui usefull (Dynamic change)
+
+* Lage slides til kongsberg møte
+* Få RNN til å funke
+
+DONE
+* Legg til støy-data og dropout
+* Test data skille på filer
+* Støye til alle samples, noise reducing auto-encoder

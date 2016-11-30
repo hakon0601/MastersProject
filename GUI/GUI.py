@@ -16,9 +16,9 @@ class GUI(tk.Tk):
                                      "Mel-frequency Cepstral Coefficients",
                                      "Spectral Density Estimation"
                                      ]
-    neural_network_types = ["Standard Feed-forward Neural Network",
+    neural_network_types = ["Recurrent Neural Network",
                             "Convolutional Neural Network",
-                            "Recurrent Neural Network",
+                            "Standard Feed-forward Neural Network",
                             "Radial Basis Function Network"
                              ]
 
@@ -73,7 +73,7 @@ class GUI(tk.Tk):
 
 
         NNtype = self.NNbox.get()
-        if NNtype == self.neural_network_types[0]:
+        if NNtype == self.neural_network_types[2]:
             neural_network = feed_forward_neural_network.FeedForwardNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
                                                                        activation_functions_type=list(map(int, self.activation_functions_entry.get().split())),
                                                                        enable_bias=True if self.bias_box.get() == "True" else False,
@@ -81,8 +81,12 @@ class GUI(tk.Tk):
                                                                        epocs=int(self.training_iterations_entry.get()))
         elif NNtype == self.neural_network_types[1]:
             neural_network = convolutional_neural_network.ConvolutionalNN()
-        elif NNtype == self.neural_network_types[2]:
-            neural_network = recurrent_neural_network.RecurrentNN()
+        elif NNtype == self.neural_network_types[0]:
+            neural_network = recurrent_neural_network.RecurrentNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
+                                                                    activation_functions_type=list(map(int, self.activation_functions_entry.get().split())),
+                                                                    enable_bias=True if self.bias_box.get() == "True" else False,
+                                                                    learning_rate=float(self.learning_rate_entry.get()),
+epocs=int(self.training_iterations_entry.get()))
         elif NNtype == self.neural_network_types[3]:
             neural_network = radial_basis_function_neural_network.RadialBasisFunctionNN()
 

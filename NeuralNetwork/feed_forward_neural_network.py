@@ -42,29 +42,18 @@ class FeedForwardNN(NeuralNetworkBase):
         self.bias = []
         if self.enable_bias:
             for layer_size in self.layers_size[1:]:
-                b = tf.Variable(tf.zeros(([layer_size])))
+                b = tf.Variable(tf.random_normal(([layer_size])))
                 self.bias.append(b)
-
-        # Setting up activation functions between outgoing neurons and ongoing weights
-        '''
-        self.activation_functions = []
-        for j in range(len(self.activation_functions_type)):
-            if self.activation_functions_type[j] == 0:
-               self.activation_functions.append(tf.nn.softmax(tf.matmul(self.layer_tensors[j], weights[j])))
-        '''
-
-        # self.activation_function = tf.nn.softmax(tf.matmul(self.input_tensor, W_1) + b)
 
         self.keep_prob = tf.placeholder(tf.float32)
 
-        self.activation_model = self.model(predict=False)
+        self.activation_model = self.model()
 
         self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.activation_model, self.layer_tensors[-1]))
         # self.cost = tf.reduce_mean(-tf.reduce_sum(self.layer_tensors[-1] * tf.log(self.activation_model), reduction_indices=[1]))
         # self.train_step = tf.train.GradientDescentOptimizer(self.learning_rate).minimize(self.cost)
         self.train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost)
-        # self.predict_op = tf.argmax(self.activation_model, 1)
-        self.predict_op = self.model(predict=True)
+        self.predict_op = self.model()
 
         self.init = tf.initialize_all_variables()
 
@@ -72,7 +61,6 @@ class FeedForwardNN(NeuralNetworkBase):
         self.sess = tf.Session()
         self.sess.run(self.init)
         self.test_accuracy_of_solution(samples, labels, samples_test, labels_test)
-        # self.print_weights()
 
         for epoch in range(self.epocs):
             avg_cost = 0.
@@ -82,7 +70,6 @@ class FeedForwardNN(NeuralNetworkBase):
             for j in range(total_batch):
                 # batch_xs, batch_ys = self.get_next_batch(i*BATCH_SIZE, BATCH_SIZE, samples, labels)
                 batch_xs, batch_ys = self.get_random_batch(BATCH_SIZE, samples, labels)
-                # self.sess.run(self.train_step, feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys})
                 _, c = self.sess.run([self.train_step, self.cost], feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys, self.keep_prob: DROPOUT})
 
                 avg_cost += c / total_batch
@@ -90,13 +77,6 @@ class FeedForwardNN(NeuralNetworkBase):
                 print("\tEpoch:", '%04d' % (epoch+1), "cost=", "{:.9f}".format(avg_cost))
                 self.test_accuracy_of_solution(samples, labels, samples_test, labels_test)
         print("Optimization Finished!")
-    '''
-            # self.print_weights()
-            # Test accuracy between each iteration to view improvement and stagnation
-            self.test_accuracy_of_solution(samples_test, labels_test)
-        print()
-        self.print_weights()
-    '''
 
 
     def get_next_batch(self, current_index, batch_size, samples, labels):
@@ -127,7 +107,7 @@ class FeedForwardNN(NeuralNetworkBase):
         accuracy_training = self.sess.run(accuracy, feed_dict={self.layer_tensors[0]: samples, self.layer_tensors[-1]: labels, self.keep_prob: 1})
         print("Accuracy test:", accuracy_test, "Accuracy training:", accuracy_training)
 
-    def model(self, predict=False):
+    def model(self):
         if len(self.layers_size) < 3:
             if self.enable_bias:
                 return tf.matmul(self.layer_tensors[0], self.weights[0]) + self.bias[0]
