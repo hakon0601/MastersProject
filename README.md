@@ -1,6 +1,5 @@
 TODO
 
-* Write a plan of how to work with the masters project
 
 * Change "Standard Feed-forward Neural Network" heading to "Standard Feed-forward Neural Networks"
 * Also Radial Basis Function Network to Radial Basis Function Networks
@@ -16,7 +15,7 @@ TODO
 * Do activation function in gui usefull (Dynamic change)
 
 * Lage slides til kongsberg møte
-* Få RNN til å funke
+* Få RNN til å funke, med fler nivå
 
 DONE
 * Legg til støy-data og dropout

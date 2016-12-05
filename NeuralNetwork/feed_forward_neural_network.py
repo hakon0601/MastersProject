@@ -60,19 +60,19 @@ class FeedForwardNN(NeuralNetworkBase):
     def train_neural_network(self, samples, labels, samples_test, labels_test):
         self.sess = tf.Session()
         self.sess.run(self.init)
-        self.test_accuracy_of_solution(samples, labels, samples_test, labels_test)
+        # self.test_accuracy_of_solution(samples, labels, samples_test, labels_test)
 
         for epoch in range(self.epocs):
             avg_cost = 0.
-            total_batch = int(len(samples)/BATCH_SIZE)
+            nr_of_batches_to_cover_all_samples = int(len(samples)/BATCH_SIZE)
             sys.stdout.write("\rTraining network %02d%%" % floor((epoch + 1) * (100 / self.epocs)))
             sys.stdout.flush()
-            for j in range(total_batch):
+            for j in range(nr_of_batches_to_cover_all_samples):
                 # batch_xs, batch_ys = self.get_next_batch(i*BATCH_SIZE, BATCH_SIZE, samples, labels)
                 batch_xs, batch_ys = self.get_random_batch(BATCH_SIZE, samples, labels)
                 _, c = self.sess.run([self.train_step, self.cost], feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys, self.keep_prob: DROPOUT})
 
-                avg_cost += c / total_batch
+                avg_cost += c / nr_of_batches_to_cover_all_samples
             if epoch % 1 == 0:
                 print("\tEpoch:", '%04d' % (epoch+1), "cost=", "{:.9f}".format(avg_cost))
                 self.test_accuracy_of_solution(samples, labels, samples_test, labels_test)

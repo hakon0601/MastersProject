@@ -6,12 +6,7 @@ from math import floor
 import numpy as np
 import random
 from tensorflow.python.ops import rnn, rnn_cell
-from copy import deepcopy
 
-
-# flags = tf.app.flags
-# FLAGS = flags.FLAGS
-# flags.DEFINE_string('data_dir', '/tmp/data/', 'Directory for storing data')
 
 class RecurrentNN(NeuralNetworkBase):
     def __init__(self, hidden_layers=[10], activation_functions_type=[0, 0], enable_bias=False, learning_rate=0.5, epocs=100):
@@ -20,22 +15,21 @@ class RecurrentNN(NeuralNetworkBase):
         self.enable_bias = enable_bias
         self.learning_rate = learning_rate
         self.epocs = epocs
-        self.related_steps = 20
 
 
     def construct_neural_network(self, input_size=1000):
-        self.input_size = int(input_size/self.related_steps)
+        self.input_size = int(input_size // RELATED_STEPS)
         output_size=NR_OF_CLASSES
         self.layers_size = [input_size] + self.hidden_layers + [output_size]
         self.layer_tensors = []
 
         # self.input_tensor = tf.placeholder(tf.float32, [None, input_size])
 
-        self.layer_tensors.append(tf.placeholder(tf.float32, [None, self.related_steps, self.input_size]))
+        self.layer_tensors.append(tf.placeholder(tf.float32, [None, RELATED_STEPS, self.input_size]))
         # Creating a placeholder variable for keeping the values in each layer
         for layer_size in self.layers_size:
             self.layer_tensors.append(tf.placeholder(tf.float32, [None, layer_size]))
-        print("Network structure",(self.input_size, self.related_steps), self.layers_size)
+        print("Network structure",(self.input_size, RELATED_STEPS), self.layers_size)
 
 
         # Generate weights from input through hidden layers to output
@@ -61,28 +55,26 @@ class RecurrentNN(NeuralNetworkBase):
         self.init = tf.initialize_all_variables()
 
     def train_neural_network(self, samples, labels, samples_test, labels_test):
+        samples = self.reshape_samples(samples)
+        samples_test = self.reshape_samples(samples_test)
         self.sess = tf.Session()
         self.sess.run(self.init)
-        # self.test_accuracy_of_solution(samples, labels, samples_test, labels_test)
+        self.test_accuracy_of_solution(samples, labels, samples_test, labels_test, reshape=False)
 
         for epoch in range(self.epocs):
-
             avg_cost = 0.
-            total_batch = int(len(samples)/BATCH_SIZE)
+            nr_of_batches_to_cover_all_samples = int(len(samples)/BATCH_SIZE)
             sys.stdout.write("\rTraining network %02d%%" % floor((epoch + 1) * (100 / self.epocs)))
             sys.stdout.flush()
-            for j in range(total_batch):
-
+            for j in range(nr_of_batches_to_cover_all_samples):
                 batch_xs, batch_ys = self.get_random_batch(BATCH_SIZE, samples, labels)
-
-                # batch_xs = batch_xs[0].reshape((BATCH_SIZE, self.related_steps, self.input_size))
                 # Run optimization op (backprop)
                 _, c = self.sess.run([self.train_step, self.cost], feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys})
 
-                avg_cost += c / total_batch
+                avg_cost += c / nr_of_batches_to_cover_all_samples
             if epoch % 1 == 0:
-                print("\tEpoch:", '%04d' % (epoch+1), "cost=", "{:.9f}".format(avg_cost))
-                self.test_accuracy_of_solution(samples, labels, samples_test, labels_test)
+                print("\tEpoch:", '%03d' % (epoch+1), "cost=", "{:.9f}".format(avg_cost))
+                self.test_accuracy_of_solution(samples, labels, samples_test, labels_test, reshape=False)
         print("Optimization Finished!")
 
 
@@ -102,31 +94,29 @@ class RecurrentNN(NeuralNetworkBase):
             rand_index = random.randrange(0, len(samples))
             rand_samples.append(samples[rand_index])
             rand_labels.append(labels[rand_index])
-        return np.array(rand_samples).reshape((BATCH_SIZE, self.related_steps, self.input_size)), rand_labels
+        return rand_samples, rand_labels
 
-    def test_accuracy_of_solution(self, samples, labels, samples_test, labels_test):
-        samples_reshaped = np.array(deepcopy(samples))
-        samples_test_reshaped = np.array(deepcopy(samples_test))
-        samples_reshaped = samples_reshaped.reshape((-1, self.related_steps, self.input_size))
-        samples_test_reshaped = samples_test_reshaped.reshape((-1, self.related_steps, self.input_size))
+    def test_accuracy_of_solution(self, samples, labels, samples_test, labels_test, reshape=True):
+        if reshape:
+            samples = self.reshape_samples(samples)
+            samples_test = self.reshape_samples(samples_test)
 
         index_of_highest_output_neurons = tf.argmax(self.activation_model, 1)
         index_of_correct_label = tf.argmax(self.layer_tensors[-1], 1)
         correct_predictions = tf.equal(index_of_highest_output_neurons, index_of_correct_label)
         # Computes the average of a list of booleans
         accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
-        accuracy_test = self.sess.run(accuracy, feed_dict={self.layer_tensors[0]: samples_test_reshaped, self.layer_tensors[-1]: labels_test})
-        accuracy_training = self.sess.run(accuracy, feed_dict={self.layer_tensors[0]: samples_reshaped, self.layer_tensors[-1]: labels})
+        accuracy_test = self.sess.run(accuracy, feed_dict={self.layer_tensors[0]: samples_test, self.layer_tensors[-1]: labels_test})
+        accuracy_training = self.sess.run(accuracy, feed_dict={self.layer_tensors[0]: samples, self.layer_tensors[-1]: labels})
         print("Accuracy test:", accuracy_test, "Accuracy training:", accuracy_training)
 
     def model(self, x):
-
         # Permuting batch_size and n_steps
         x = tf.transpose(x, [1, 0, 2])
         # Reshaping to (n_steps*batch_size, n_input)
         x = tf.reshape(x, [-1, self.input_size])
         # Split to get a list of 'n_steps' tensors of shape (batch_size, n_input)
-        x = tf.split(0, self.related_steps, x)
+        x = tf.split(0, RELATED_STEPS, x)
 
         lstm_cell = rnn_cell.BasicLSTMCell(self.layers_size[1], forget_bias=1.0)
 
@@ -173,4 +163,9 @@ class RecurrentNN(NeuralNetworkBase):
 
     def predict_one_sample(self, sample):
         print(self.sess.run(self.predict_op, feed_dict={self.layer_tensors[0]: [sample]}))
+
+    def reshape_samples(self, samples):
+        # Cut of the rest of each sample after reshaping
+        samples = np.array([sample[:self.input_size*RELATED_STEPS] for sample in samples])
+        return samples.reshape((len(samples), RELATED_STEPS, self.input_size))
 

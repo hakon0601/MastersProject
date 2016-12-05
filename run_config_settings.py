@@ -22,9 +22,19 @@ NR_OF_FILES = 85
 SAMPLES_PR_FILE = 100
 SAMPLE_LENGTH = 0.5 # sec
 
+# Only one of these can be true at once
+# Describes what part of the dataset is being used as test data
+USE_WHOLE_FILE_AS_TEST = False
+USE_END_OF_FILE_AS_TEST = True
+USE_RANDOM_SAMPLES_AS_TEST = False
+
+# Recurrent NN
+RELATED_STEPS = 20
+
 NOISE_ENABLED = False
 NR_OF_NOISY_SAMPLES_PR_SAMPLE = 2
 
+RESET_PICKLE = False
 MOCK_DATA = False
 USE_PRELOADED_DATA = True
 
@@ -34,7 +44,7 @@ USE_PRELOADED_DATA = True
 # if SAMPLES_PR_FILE * SAMPLE_LENGTH > 10:
 #     raise ValueError
 
-BATCH_SIZE = 1
+BATCH_SIZE = 10
 EPOCS = ceil(NR_OF_FILES * SAMPLES_PR_FILE / BATCH_SIZE) # To ensure all samples being used in training
 EPOCS = 50
 LEARNING_RATE = 0.001
