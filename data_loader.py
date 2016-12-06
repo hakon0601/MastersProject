@@ -45,35 +45,38 @@ class DataLoader():
         for i in range(len(included_filenames)):
             samples_from_one_file, labels_from_one_file = self.load_samples_from_file(root=DATA_PATH, filename=included_filenames[i], recurrent=recurrent)
             if USE_WHOLE_FILE_AS_TEST:
-                if included_filenames[i][:4] not in files_used_for_testing: # The four first letters of a filename is type identificator
+                if included_filenames[i][:4] in files_used_for_testing: # The four first letters of a filename is type identificator
+                    noisy_samples, noisy_labels = self.create_noisy_samples(samples_from_one_file, labels_from_one_file[0])
+                    samples += samples_from_one_file + noisy_samples
+                    labels += labels_from_one_file + noisy_labels
+                else:
                     files_used_for_testing.append(included_filenames[i][:4])
                     samples_test += samples_from_one_file
                     labels_test += labels_from_one_file
-                else:
-                    samples += samples_from_one_file
-                    labels += labels_from_one_file
             elif USE_RANDOM_SAMPLES_AS_TEST:
                 for j in range(len(samples_from_one_file)):
                     if random() < TEST_PERCENTAGE:
                         samples_test.append(samples_from_one_file[j])
                         labels_test.append(labels_from_one_file[j])
                     else:
-                        samples.append(samples_from_one_file[j])
-                        labels.append(labels_from_one_file[j])
+                        noisy_sample, noisy_label = self.create_noisy_samples([samples_from_one_file[j]], labels_from_one_file[j])
+                        samples += [samples_from_one_file[j]] + noisy_sample
+                        labels += [labels_from_one_file[j]] + noisy_label
             elif USE_END_OF_FILE_AS_TEST:
                 nr_of_test_samples = round(len(samples_from_one_file) * TEST_PERCENTAGE)
                 for j in range(len(samples_from_one_file)):
                     if j < len(samples_from_one_file) - nr_of_test_samples:
-                        samples.append(samples_from_one_file[j])
-                        labels.append(labels_from_one_file[j])
+                        noisy_sample, noisy_label = self.create_noisy_samples([samples_from_one_file[j]], labels_from_one_file[j])
+                        samples += [samples_from_one_file[j]] + noisy_sample
+                        labels += [labels_from_one_file[j]] + noisy_label
                     else:
                         samples_test.append(samples_from_one_file[j])
                         labels_test.append(labels_from_one_file[j])
 
-            if NOISE_ENABLED:
-                for j in range(NR_OF_NOISY_SAMPLES_PR_SAMPLE):
-                    samples += self.create_noisy_sample(samples_from_one_file)
-                    labels += labels_from_one_file
+            # if NOISE_ENABLED:
+            #     for j in range(NR_OF_NOISY_SAMPLES_PR_SAMPLE):
+            #         samples += self.create_noisy_samples(samples_from_one_file)
+            #         labels += labels_from_one_file
 
             sys.stdout.write("\rLoading data %d%%" % floor((i + 1) * (100/len(included_filenames))))
             sys.stdout.flush()
@@ -170,12 +173,20 @@ class DataLoader():
                     break
         return included_filenames
 
-    def create_noisy_sample(self, samples_from_one_file):
-        noisy_samples = []
-        for i in range(len(samples_from_one_file)):
-            noise = np.random.normal(np.mean(samples_from_one_file[i]), np.std(samples_from_one_file[i]), len(samples_from_one_file[i]))
-            noisy_samples.append(samples_from_one_file[i] + noise)
-        return noisy_samples
+    def create_noisy_samples(self, samples_from_one_file, label):
+        if not NOISE_ENABLED:
+             return [], []
+        for j in range(NR_OF_NOISY_SAMPLES_PR_SAMPLE):
+            noisy_samples = []
+            noisy_labels = []
+            for i in range(len(samples_from_one_file)):
+                std = np.std(samples_from_one_file[i])
+                std = std*0.1
+                noise = np.random.normal(np.mean(samples_from_one_file[i]), std, len(samples_from_one_file[i]))
+                noisy_samples.append(samples_from_one_file[i] + noise)
+                noisy_labels.append(label)
+        return noisy_samples, noisy_labels
+
 
 
 
