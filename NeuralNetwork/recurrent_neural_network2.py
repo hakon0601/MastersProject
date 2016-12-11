@@ -17,19 +17,52 @@ class RecurrentNN(NeuralNetworkBase):
         self.epocs = epocs
 
 
+
     def construct_neural_network(self, input_size=1000):
         self.input_size = int(input_size // RELATED_STEPS)
         output_size=NR_OF_CLASSES
         self.layers_size = [input_size] + self.hidden_layers + [output_size]
-        self.layer_tensors = []
 
-        # self.input_tensor = tf.placeholder(tf.float32, [None, input_size])
-        # Initalized with the input tensor (x)
-        self.layer_tensors.append(tf.placeholder(tf.float32, [None, RELATED_STEPS, self.input_size]))
-        # Creating a placeholder variable for keeping the values in each layer
-        for layer_size in self.layers_size:
-            self.layer_tensors.append(tf.placeholder(tf.float32, [None, layer_size]))
-        print("Network structure",(self.input_size, RELATED_STEPS), self.layers_size)
+        state_size = 100
+        num_layers = 3
+
+        self.layer_tensors = []
+        self.layer_tensors.append(tf.placeholder(tf.float32, [BATCH_SIZE, RELATED_STEPS]))
+
+        self.layer_tensors.append(tf.placeholder(tf.float32, [BATCH_SIZE, RELATED_STEPS]))
+
+        embeddings = tf.get_variable('embedding_matrix', [NR_OF_CLASSES, state_size])
+
+        rnn_inputs = tf.nn.embedding_lookup(embeddings, self.layer_tensors[-1])
+
+        cell = tf.nn.rnn_cell.LSTMCell(state_size, state_is_tuple=True)
+        cell = tf.nn.rnn_cell.MultiRNNCell([cell] * num_layers, state_is_tuple=True)
+        init_state = cell.zero_state(BATCH_SIZE, tf.float32)
+        rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, rnn_inputs, initial_state=init_state)
+
+        with tf.variable_scope('softmax'):
+            W = tf.get_variable('W', [state_size, NR_OF_CLASSES])
+            b = tf.get_variable('b', [NR_OF_CLASSES], initializer=tf.constant_initializer(0.0))
+
+        #reshape rnn_outputs and y so we can get the logits in a single matmul
+        rnn_outputs = tf.reshape(rnn_outputs, [-1, state_size])
+        y_reshaped = tf.reshape(self.layer_tensors[-1], [-1])
+
+        logits = tf.matmul(rnn_outputs, W) + b
+
+        self.cost = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(logits, y_reshaped))
+        self.train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(self.cost)
+
+        self.init = tf.initialize_all_variables()
+
+        return dict(
+            x = self.layer_tensors[0],
+            y = self.layer_tensors[-1],
+            init_state = init_state,
+            final_state = final_state,
+            total_loss = self.cost,
+            train_step = self.train_step
+        )
 
 
         # Generate weights from input through hidden layers to output
@@ -46,20 +79,48 @@ class RecurrentNN(NeuralNetworkBase):
 
         self.keep_prob = tf.placeholder(tf.float32)
 
-        self.activation_model = self.model(x=self.layer_tensors[0])
+        # self.activation_model = self.model(x=self.layer_tensors[0])
 
         self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.activation_model, self.layer_tensors[-1]))
         self.train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost)
         # self.predict_op = self.model(x=self.layer_tensors[0])
 
-        self.init = tf.initialize_all_variables()
-
     def train_neural_network(self, samples, labels, samples_test, labels_test):
+    #     tf.set_random_seed(2345)
+    #     with tf.Session() as sess:
+    #         sess.run(tf.initialize_all_variables())
+    #         training_losses = []
+    #         for idx, epoch in enumerate(gen_epochs(num_epochs, num_steps, batch_size)):
+    #             training_loss = 0
+    #             steps = 0
+    #             training_state = None
+    #             for X, Y in epoch:
+    #                 steps += 1
+    #
+    #                 feed_dict={g['x']: X, g['y']: Y}
+    #                 if training_state is not None:
+    #                     feed_dict[g['init_state']] = training_state
+    #                 training_loss_, training_state, _ = sess.run([g['total_loss'],
+    #                                                       g['final_state'],
+    #                                                       g['train_step']],
+    #                                                              feed_dict)
+    #                 training_loss += training_loss_
+    #             if verbose:
+    #                 print("Average training loss for Epoch", idx, ":", training_loss/steps)
+    #             training_losses.append(training_loss/steps)
+    #
+    #         if isinstance(save, str):
+    #             g['saver'].save(sess, save)
+    #
+    # return training_losses
+
+
+
         samples = self.reshape_samples(samples)
         samples_test = self.reshape_samples(samples_test)
         self.sess = tf.Session()
         self.sess.run(self.init)
-        # self.test_accuracy_of_solution(samples, labels, samples_test, labels_test, reshape=False)
+        self.test_accuracy_of_solution(samples, labels, samples_test, labels_test, reshape=False)
 
         for epoch in range(self.epocs):
             avg_cost = 0.
