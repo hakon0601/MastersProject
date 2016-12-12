@@ -23,6 +23,36 @@ class RecurrentNN(NeuralNetworkBase):
         self.layers_size = [input_size] + self.hidden_layers + [output_size]
         self.layer_tensors = []
 
+
+        num_neurons = 200
+        num_layers = 3
+        self.dropout = tf.placeholder(tf.float32)
+
+        cell = rnn_cell.GRUCell(num_neurons)  # Or LSTMCell(num_neurons)
+        cell = rnn_cell.DropoutWrapper(cell, output_keep_prob=self.dropout)
+        cell = rnn_cell.MultiRNNCell([cell] * num_layers)
+
+        # max_length = 100
+
+        # Batch size x time steps x features.
+        self.data = tf.placeholder(tf.float32, [None, RELATED_STEPS, self.input_size])
+        self.target = tf.placeholder(tf.float32, [None, output_size])
+        output, _ = tf.nn.dynamic_rnn(cell, self.data, dtype=tf.float32)
+        output = tf.transpose(output, [1, 0, 2])
+        last = tf.gather(output, int(output.get_shape()[0]) - 1)
+
+        weight = tf.Variable(tf.truncated_normal([num_neurons, output_size], stddev=0.1))
+        bias = tf.Variable(tf.constant(0.1, shape=[output_size]))
+        self.prediction = tf.nn.softmax(tf.matmul(last, weight) + bias)
+
+        self.cost = -tf.reduce_sum(self.target * tf.log(self.prediction))
+        self.train_step = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.cost)
+
+        self.error = tf.reduce_mean(tf.cast(tf.not_equal(tf.argmax(self.target, 1), tf.argmax(self.prediction, 1)), tf.float32))
+
+        self.init = tf.global_variables_initializer()
+        return
+
         # self.input_tensor = tf.placeholder(tf.float32, [None, input_size])
         # Initalized with the input tensor (x)
         self.layer_tensors.append(tf.placeholder(tf.float32, [None, RELATED_STEPS, self.input_size]))
@@ -69,12 +99,13 @@ class RecurrentNN(NeuralNetworkBase):
             for j in range(nr_of_batches_to_cover_all_samples):
                 batch_xs, batch_ys = self.get_random_batch(BATCH_SIZE, samples, labels)
                 # Run optimization op (backprop)
-                _, c = self.sess.run([self.train_step, self.cost], feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys})
+                self.sess.run(self.train_step, feed_dict={self.data: batch_xs, self.target: batch_ys, self.dropout: 0.5})
 
-                avg_cost += c / nr_of_batches_to_cover_all_samples
-            if epoch % 1 == 0:
-                print("\tEpoch:", '%03d' % (epoch+1), "cost=", "{:.9f}".format(avg_cost))
-                self.test_accuracy_of_solution(samples, labels, samples_test, labels_test, reshape=False)
+                # avg_cost += c / nr_of_batches_to_cover_all_samples
+            self.test_accuracy_of_solution(samples, labels, samples_test, labels_test, reshape=False)
+            # if epoch % 1 == 0:
+            #     print("\tEpoch:", '%03d' % (epoch+1), "cost=", "{:.9f}".format(avg_cost))
+            #     self.test_accuracy_of_solution(samples, labels, samples_test, labels_test, reshape=False)
         print("Optimization Finished!")
 
 
@@ -100,6 +131,12 @@ class RecurrentNN(NeuralNetworkBase):
         if reshape:
             samples = self.reshape_samples(samples)
             samples_test = self.reshape_samples(samples_test)
+
+        accuracy_test = self.sess.run(self.error, { self.data: samples_test, self.target: labels_test, self.dropout: 1})
+        accuracy_training = self.sess.run(self.error, { self.data: samples, self.target: labels, self.dropout: 1})
+        print('Error {:3.1f}%'.format(100 * accuracy_test))
+        print("Accuracy test:", accuracy_test, "Accuracy training:", accuracy_training)
+        return
 
         index_of_highest_output_neurons = tf.argmax(self.activation_model, 1)
         index_of_correct_label = tf.argmax(self.layer_tensors[-1], 1)

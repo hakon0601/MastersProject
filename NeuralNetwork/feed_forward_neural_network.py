@@ -55,7 +55,7 @@ class FeedForwardNN(NeuralNetworkBase):
         self.train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost)
         self.predict_op = self.model()
 
-        self.init = tf.initialize_all_variables()
+        self.init = tf.global_variables_initializer()
 
     def train_neural_network(self, samples, labels, samples_test, labels_test):
         self.sess = tf.Session()

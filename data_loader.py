@@ -147,6 +147,7 @@ class DataLoader():
         for j in range(NR_OF_CLASSES):
             if filename.startswith(INCLUDED_VESSELS[j]):
                 label[j] = 1
+                break
 
         if recurrent:
             y, sr = librosa.load(root + "/" + filename, sr=self.sampeling_rate, duration=duration)
