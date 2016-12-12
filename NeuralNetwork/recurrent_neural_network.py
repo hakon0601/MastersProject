@@ -18,94 +18,37 @@ class RecurrentNN(NeuralNetworkBase):
 
 
     def construct_neural_network(self, input_size=1000):
-        self.input_size = int(input_size // RELATED_STEPS)
-        output_size=NR_OF_CLASSES
-        self.layers_size = [input_size] + self.hidden_layers + [output_size]
-        self.layer_tensors = []
+        input_size = int(input_size // RELATED_STEPS)
+        self.layers_size = [input_size] + self.hidden_layers + [NR_OF_CLASSES]
 
-
-        num_neurons = 200
-        num_layers = 3
-        self.dropout = tf.placeholder(tf.float32)
-
-        cell = rnn_cell.GRUCell(num_neurons)  # Or LSTMCell(num_neurons)
-        cell = rnn_cell.DropoutWrapper(cell, output_keep_prob=self.dropout)
-        cell = rnn_cell.MultiRNNCell([cell] * num_layers)
-
-        # max_length = 100
-
-        # Batch size x time steps x features.
-        self.data = tf.placeholder(tf.float32, [None, RELATED_STEPS, self.input_size])
-        self.target = tf.placeholder(tf.float32, [None, output_size])
-        output, _ = tf.nn.dynamic_rnn(cell, self.data, dtype=tf.float32)
-        output = tf.transpose(output, [1, 0, 2])
-        last = tf.gather(output, int(output.get_shape()[0]) - 1)
-
-        weight = tf.Variable(tf.truncated_normal([num_neurons, output_size], stddev=0.1))
-        bias = tf.Variable(tf.constant(0.1, shape=[output_size]))
-        self.prediction = tf.nn.softmax(tf.matmul(last, weight) + bias)
-
-        self.cost = -tf.reduce_sum(self.target * tf.log(self.prediction))
-        self.train_step = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.cost)
-
-        self.error = tf.reduce_mean(tf.cast(tf.not_equal(tf.argmax(self.target, 1), tf.argmax(self.prediction, 1)), tf.float32))
-
-        self.init = tf.global_variables_initializer()
-        return
-
-        # self.input_tensor = tf.placeholder(tf.float32, [None, input_size])
-        # Initalized with the input tensor (x)
-        self.layer_tensors.append(tf.placeholder(tf.float32, [None, RELATED_STEPS, self.input_size]))
-        # Creating a placeholder variable for keeping the values in each layer
-        for layer_size in self.layers_size:
-            self.layer_tensors.append(tf.placeholder(tf.float32, [None, layer_size]))
-        print("Network structure",(self.input_size, RELATED_STEPS), self.layers_size)
-
-
-        # Generate weights from input through hidden layers to output
-        self.weights = []
-        for i in range(1, len(self.layers_size) - 1):
-            W = tf.Variable(tf.random_normal([self.layers_size[i], self.layers_size[i+1]]))
-            self.weights.append(W)
-
-        self.bias = []
-        if self.enable_bias:
-            for layer_size in self.layers_size[1:]:
-                b = tf.Variable(tf.ones(([layer_size])))
-                self.bias.append(b)
-
+        self.input_tensor = tf.placeholder(tf.float32, [None, RELATED_STEPS, self.layers_size[0]])
+        self.output_tensor = tf.placeholder(tf.float32, [None, self.layers_size[-1]])
         self.keep_prob = tf.placeholder(tf.float32)
 
-        self.activation_model = self.model(x=self.layer_tensors[0])
-
-        self.cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(self.activation_model, self.layer_tensors[-1]))
+        self.activation_model = self.model()
+        self.cost = -tf.reduce_sum(self.output_tensor * tf.log(self.activation_model))
+        # self.train_step = tf.train.RMSPropOptimizer(self.learning_rate).minimize(self.cost)
         self.train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost)
-        # self.predict_op = self.model(x=self.layer_tensors[0])
 
-        self.init = tf.initialize_all_variables()
+        self.init = tf.global_variables_initializer()
 
     def train_neural_network(self, samples, labels, samples_test, labels_test):
+
         samples = self.reshape_samples(samples)
         samples_test = self.reshape_samples(samples_test)
         self.sess = tf.Session()
         self.sess.run(self.init)
-        # self.test_accuracy_of_solution(samples, labels, samples_test, labels_test, reshape=False)
+        self.test_accuracy_of_solution(samples, labels, samples_test, labels_test, reshape=False)
 
         for epoch in range(self.epocs):
-            avg_cost = 0.
             nr_of_batches_to_cover_all_samples = int(len(samples)/BATCH_SIZE)
-            sys.stdout.write("\rTraining network %02d%%" % floor((epoch + 1) * (100 / self.epocs)))
+            sys.stdout.write("\rTraining network %02d%%\t" % floor((epoch + 1) * (100 / self.epocs)))
             sys.stdout.flush()
             for j in range(nr_of_batches_to_cover_all_samples):
                 batch_xs, batch_ys = self.get_random_batch(BATCH_SIZE, samples, labels)
-                # Run optimization op (backprop)
-                self.sess.run(self.train_step, feed_dict={self.data: batch_xs, self.target: batch_ys, self.dropout: 0.5})
+                self.sess.run(self.train_step, feed_dict={self.input_tensor: batch_xs, self.output_tensor: batch_ys, self.keep_prob: DROPOUT})
 
-                # avg_cost += c / nr_of_batches_to_cover_all_samples
             self.test_accuracy_of_solution(samples, labels, samples_test, labels_test, reshape=False)
-            # if epoch % 1 == 0:
-            #     print("\tEpoch:", '%03d' % (epoch+1), "cost=", "{:.9f}".format(avg_cost))
-            #     self.test_accuracy_of_solution(samples, labels, samples_test, labels_test, reshape=False)
         print("Optimization Finished!")
 
 
@@ -132,61 +75,33 @@ class RecurrentNN(NeuralNetworkBase):
             samples = self.reshape_samples(samples)
             samples_test = self.reshape_samples(samples_test)
 
-        accuracy_test = self.sess.run(self.error, { self.data: samples_test, self.target: labels_test, self.dropout: 1})
-        accuracy_training = self.sess.run(self.error, { self.data: samples, self.target: labels, self.dropout: 1})
-        print('Error {:3.1f}%'.format(100 * accuracy_test))
-        print("Accuracy test:", accuracy_test, "Accuracy training:", accuracy_training)
-        return
-
         index_of_highest_output_neurons = tf.argmax(self.activation_model, 1)
-        index_of_correct_label = tf.argmax(self.layer_tensors[-1], 1)
+        index_of_correct_label = tf.argmax(self.output_tensor, 1)
         correct_predictions = tf.equal(index_of_highest_output_neurons, index_of_correct_label)
-        # Computes the average of a list of booleans
         accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
-        accuracy_test = self.sess.run(accuracy, feed_dict={self.layer_tensors[0]: samples_test, self.layer_tensors[-1]: labels_test})
-        accuracy_training = self.sess.run(accuracy, feed_dict={self.layer_tensors[0]: samples, self.layer_tensors[-1]: labels})
+
+        accuracy_test = self.sess.run(accuracy, {self.input_tensor: samples_test, self.output_tensor: labels_test, self.keep_prob: 1})
+        accuracy_training = self.sess.run(accuracy, {self.input_tensor: samples, self.output_tensor: labels, self.keep_prob: 1})
         print("Accuracy test:", accuracy_test, "Accuracy training:", accuracy_training)
 
-    def model(self, x):
-        # Permuting batch_size and n_steps
-        x = tf.transpose(x, [1, 0, 2])
-        # Reshaping to (n_steps*batch_size, n_input)
-        x = tf.reshape(x, [-1, self.input_size])
-        # Split to get a list of 'n_steps' tensors of shape (batch_size, n_input)
-        x = tf.split(0, RELATED_STEPS, x)
+    def model(self):
+        cells = []
+        for i in range(1, len(self.layers_size) - 1):
+            cell = rnn_cell.GRUCell(self.layers_size[i])  # Or LSTMCell(num_neurons)
+            cell = rnn_cell.DropoutWrapper(cell, output_keep_prob=self.keep_prob)
+            cells.append(cell)
+        multilayer_cell = rnn_cell.MultiRNNCell(cells)
 
-        lstm_cell = rnn_cell.BasicLSTMCell(self.layers_size[1], forget_bias=1.0)
+        output, _ = tf.nn.dynamic_rnn(multilayer_cell, self.input_tensor, dtype=tf.float32)
+        output = tf.transpose(output, [1, 0, 2])
+        last = tf.gather(output, int(output.get_shape()[0]) - 1) # TODO this may be a bottleneck (memory)
 
-        # Get lstm cell output
-        outputs, states = rnn.rnn(lstm_cell, x, dtype=tf.float32)
-
-        # Linear activation, using rnn inner loop last output
-        return tf.matmul(outputs[-1], self.weights[-1])
-        #
-        #
-        # if len(self.layers_size) < 3:
-        #     if self.enable_bias:
-        #         return tf.matmul(self.layer_tensors[0], self.weights[0]) + self.bias[0]
-        #     else:
-        #         return tf.matmul(self.layer_tensors[0], self.weights[0])
-        # self.activations = []
-        # if self.enable_bias:
-        #     self.activations.append(tf.nn.relu(tf.matmul(self.layer_tensors[0], self.weights[0]) + self.bias[0]))
-        # else:
-        #     self.activations.append(tf.nn.relu(tf.matmul(self.layer_tensors[0], self.weights[0])))
-        #
-        # for i in range(1, len(self.weights) - 1):
-        #     if self.enable_bias:
-        #         self.activations.append(tf.nn.relu(tf.matmul(self.activations[i-1], self.weights[i]) + self.bias[i]))
-        #     else:
-        #         self.activations.append(tf.nn.relu(tf.matmul(self.activations[i-1], self.weights[i])))
-        #
-        # self.h_fc1_drop = tf.nn.dropout(self.activations[-1], self.keep_prob)
-        # if self.enable_bias:
-        #     return tf.matmul(self.h_fc1_drop, self.weights[-1] + self.bias[-1])
-        # else:
-        #     return tf.matmul(self.h_fc1_drop, self.weights[-1])
-
+        last_weights = tf.Variable(tf.random_normal([self.layers_size[-2], self.layers_size[-1]], stddev=0.1))
+        # bias = tf.Variable(tf.constant(0.1, shape=[self.layers_size[-1]]))
+        if self.enable_bias:
+            bias = tf.Variable(tf.random_normal(([self.layers_size[-1]])))
+            return tf.nn.softmax(tf.matmul(last, last_weights) + bias)
+        return tf.nn.softmax(tf.matmul(last, last_weights))
 
     def print_weights(self):
         print()
@@ -203,6 +118,6 @@ class RecurrentNN(NeuralNetworkBase):
 
     def reshape_samples(self, samples):
         # Cut of the rest of each sample after reshaping
-        samples = np.array([sample[:self.input_size*RELATED_STEPS] for sample in samples])
-        return samples.reshape((len(samples), RELATED_STEPS, self.input_size))
+        samples = np.array([sample[:self.layers_size[0]*RELATED_STEPS] for sample in samples])
+        return samples.reshape((len(samples), RELATED_STEPS, self.layers_size[0]))
 
