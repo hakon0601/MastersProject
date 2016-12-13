@@ -16,11 +16,14 @@ INCLUDED_VESSELS = ["ferry", "nansen", "sejong", "speedboat", "svendborgmaersk",
 # INCLUDED_VESSELS = ["speedboat", "tanker"]
 # INCLUDED_VESSELS = ["ferry", "speedboat", "tanker", "sub"]
 TEST_PERCENTAGE = 0.1
-SAMPELING_RATE = 1000
+SAMPLING_RATE = 1000
 NR_OF_FILES = 85
 # 85 files in total
 SAMPLES_PR_FILE = 100
 SAMPLE_LENGTH = 0.5 # sec
+
+FFT_WINDOW_SIZE = 2048
+N_MFCC = 20
 
 # Only one of these can be true at once
 # Describes what part of the dataset is being used as test data
@@ -36,7 +39,7 @@ NR_OF_NOISY_SAMPLES_PR_SAMPLE = 2
 
 RESET_PICKLE = False
 MOCK_DATA = False
-USE_PRELOADED_DATA = False
+USE_PRELOADED_DATA = True
 
 # if NR_OF_CLASSES != len(INCLUDED_VESSELS):
 #     raise ValueError
@@ -48,7 +51,7 @@ BATCH_SIZE = 5
 EPOCS = ceil(NR_OF_FILES * SAMPLES_PR_FILE / BATCH_SIZE) # To ensure all samples being used in training
 EPOCS = 50
 LEARNING_RATE = 0.001
-DROPOUT = 0.9
+DROPOUT_RATE = 0.9
 DROPOUT_ENABLED = True
 
 ACTIVATION_FUNCTIONS = "1"

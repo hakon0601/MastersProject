@@ -1,27 +1,23 @@
 import os
+import sys
 import pickle
 import librosa
 import numpy as np
 from random import shuffle, random
 from math import floor
 
-import sys
-
 from run_config_settings import *
 from tensorflow.examples.tutorials.mnist import input_data
 
-# Sample, Label
-# Label: [Ferry, Nansen, Submarine, Sejong, Speedboat, SvendborgMaersk, Tanker]
 
 class DataLoader():
 
-    def __init__(self, test_percentage=0.1, sampeling_rate=1000):
-        self.sampeling_rate = sampeling_rate
+    def __init__(self, test_percentage=0.1, sampling_rate=1000):
+        self.sampling_rate = sampling_rate
         self.test_percentage = test_percentage
         if RESET_PICKLE:
             dictionary = {}
             self.pickle_save(dictionary)
-
 
     def load_data(self, recurrent=False):
         if MOCK_DATA:
@@ -39,18 +35,17 @@ class DataLoader():
         labels = []
         samples_test = []
         labels_test = []
-
         # sample_every_n = int(self.test_percentage * 100)
         files_used_for_testing = []
         for i in range(len(included_filenames)):
             samples_from_one_file, labels_from_one_file = self.load_samples_from_file(root=DATA_PATH, filename=included_filenames[i], recurrent=recurrent)
             if USE_WHOLE_FILE_AS_TEST:
-                if included_filenames[i][:4] in files_used_for_testing: # The four first letters of a filename is type identificator
+                if included_filenames[i][:3] in files_used_for_testing: # The three first letters of a filename is type identificator
                     noisy_samples, noisy_labels = self.create_noisy_samples(samples_from_one_file, labels_from_one_file[0])
                     samples += samples_from_one_file + noisy_samples
                     labels += labels_from_one_file + noisy_labels
                 else:
-                    files_used_for_testing.append(included_filenames[i][:4])
+                    files_used_for_testing.append(included_filenames[i][:3])
                     samples_test += samples_from_one_file
                     labels_test += labels_from_one_file
             elif USE_RANDOM_SAMPLES_AS_TEST:
@@ -72,11 +67,6 @@ class DataLoader():
                     else:
                         samples_test.append(samples_from_one_file[j])
                         labels_test.append(labels_from_one_file[j])
-
-            # if NOISE_ENABLED:
-            #     for j in range(NR_OF_NOISY_SAMPLES_PR_SAMPLE):
-            #         samples += self.create_noisy_samples(samples_from_one_file)
-            #         labels += labels_from_one_file
 
             sys.stdout.write("\rLoading data %d%%" % floor((i + 1) * (100/len(included_filenames))))
             sys.stdout.flush()
@@ -130,7 +120,7 @@ class DataLoader():
             return pickle.load(f)
 
     def get_parameter_key(self, recurrent):
-        return str(NR_OF_CLASSES) + str(TEST_PERCENTAGE) + str(SAMPELING_RATE) + \
+        return str(NR_OF_CLASSES) + str(TEST_PERCENTAGE) + str(SAMPLING_RATE) + \
                str(SAMPLES_PR_FILE) + str(SAMPLE_LENGTH) + "rec=" + str(recurrent) + \
                "noise=" + str(NOISE_ENABLED) + str(NR_OF_NOISY_SAMPLES_PR_SAMPLE) + \
                str(USE_END_OF_FILE_AS_TEST) + str(USE_WHOLE_FILE_AS_TEST) + str(USE_RANDOM_SAMPLES_AS_TEST)
@@ -150,12 +140,12 @@ class DataLoader():
                 break
 
         if recurrent:
-            y, sr = librosa.load(root + "/" + filename, sr=self.sampeling_rate, duration=duration)
+            y, sr = librosa.load(root + "/" + filename, sr=self.sampling_rate, duration=duration)
             samples.append(y)
             labels.append(label)
         else:
             for sample_nr in range(SAMPLES_PR_FILE):
-                y, sr = librosa.load(root + "/" + filename, sr=self.sampeling_rate, duration=SAMPLE_LENGTH, offset=sample_nr*offset)
+                y, sr = librosa.load(root + "/" + filename, sr=self.sampling_rate, duration=SAMPLE_LENGTH, offset=sample_nr * offset)
                 samples.append(y)
                 labels.append(label)
 

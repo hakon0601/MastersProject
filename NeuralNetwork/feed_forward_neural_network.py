@@ -12,12 +12,13 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('data_dir', '/tmp/data/', 'Directory for storing data')
 
 class FeedForwardNN(NeuralNetworkBase):
-    def __init__(self, hidden_layers=[10], activation_functions_type=[0, 0], enable_bias=False, learning_rate=0.5, epocs=100):
+    def __init__(self, hidden_layers=[10], activation_functions_type=[0, 0], enable_bias=False, learning_rate=0.5, dropout_rate=0.9, epocs=100):
         self.hidden_layers = hidden_layers
         self.activation_functions_type = activation_functions_type
         self.enable_bias = enable_bias
         self.learning_rate = learning_rate
         self.epocs = epocs
+        self.dropout_rate = dropout_rate
 
 
     def construct_neural_network(self, input_size=1000):
@@ -70,7 +71,7 @@ class FeedForwardNN(NeuralNetworkBase):
             for j in range(nr_of_batches_to_cover_all_samples):
                 # batch_xs, batch_ys = self.get_next_batch(i*BATCH_SIZE, BATCH_SIZE, samples, labels)
                 batch_xs, batch_ys = self.get_random_batch(BATCH_SIZE, samples, labels)
-                _, c = self.sess.run([self.train_step, self.cost], feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys, self.keep_prob: DROPOUT})
+                _, c = self.sess.run([self.train_step, self.cost], feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys, self.keep_prob: self.dropout_rate})
 
                 avg_cost += c / nr_of_batches_to_cover_all_samples
             if epoch % 1 == 0:
