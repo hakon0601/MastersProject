@@ -20,15 +20,15 @@ SAMPLING_RATE = 1000
 NR_OF_FILES = 85
 # 85 files in total
 SAMPLES_PR_FILE = 100
-SAMPLE_LENGTH = 0.5 # sec
+SAMPLE_LENGTH = 0.2 # sec
 
 FFT_WINDOW_SIZE = 2048
 N_MFCC = 20
 
 # Only one of these can be true at once
 # Describes what part of the dataset is being used as test data
-USE_WHOLE_FILE_AS_TEST = True # TODO fix the other two options for recurrent networks
-USE_END_OF_FILE_AS_TEST = False
+USE_WHOLE_FILE_AS_TEST = False # TODO fix the other two options for recurrent networks
+USE_END_OF_FILE_AS_TEST = True
 USE_RANDOM_SAMPLES_AS_TEST = False
 
 # Recurrent NN
@@ -39,7 +39,7 @@ NR_OF_NOISY_SAMPLES_PR_SAMPLE = 2
 
 RESET_PICKLE = False
 MOCK_DATA = False
-USE_PRELOADED_DATA = True
+USE_PRELOADED_DATA = False
 
 # if NR_OF_CLASSES != len(INCLUDED_VESSELS):
 #     raise ValueError
@@ -51,8 +51,9 @@ BATCH_SIZE = 5
 EPOCS = ceil(NR_OF_FILES * SAMPLES_PR_FILE / BATCH_SIZE) # To ensure all samples being used in training
 EPOCS = 50
 LEARNING_RATE = 0.001
+BIAS_ENABLED = True
 DROPOUT_RATE = 0.9
 DROPOUT_ENABLED = True
 
 ACTIVATION_FUNCTIONS = "1"
-HIDDEN_LAYERS = "256"
+HIDDEN_LAYERS = "200 200"

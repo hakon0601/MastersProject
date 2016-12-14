@@ -58,7 +58,7 @@ class DataLoader():
                         samples += [samples_from_one_file[j]] + noisy_sample
                         labels += [labels_from_one_file[j]] + noisy_label
             elif USE_END_OF_FILE_AS_TEST:
-                nr_of_test_samples = round(len(samples_from_one_file) * TEST_PERCENTAGE)
+                nr_of_test_samples = ceil(len(samples_from_one_file) * TEST_PERCENTAGE)
                 for j in range(len(samples_from_one_file)):
                     if j < len(samples_from_one_file) - nr_of_test_samples:
                         noisy_sample, noisy_label = self.create_noisy_samples([samples_from_one_file[j]], labels_from_one_file[j])
@@ -128,10 +128,7 @@ class DataLoader():
     def load_samples_from_file(self, root, filename, recurrent):
         samples = []
         labels = []
-        # y, sr = librosa.load(root + "/" + included_filenames[i])
-        # duration = librosa.get_duration(y=y, sr=sr)
         duration = 10.0
-        offset = (duration - SAMPLE_LENGTH) / (SAMPLES_PR_FILE - 1)
 
         label = np.zeros(NR_OF_CLASSES)
         for j in range(NR_OF_CLASSES):
@@ -140,11 +137,16 @@ class DataLoader():
                 break
 
         if recurrent:
-            y, sr = librosa.load(root + "/" + filename, sr=self.sampling_rate, duration=duration)
-            samples.append(y)
-            labels.append(label)
+            # The length of each sample is the sample length * number of related steps
+            offset = (duration - (SAMPLE_LENGTH * RELATED_STEPS)) / (SAMPLES_PR_FILE // RELATED_STEPS)
+            for sample_nr in range(SAMPLES_PR_FILE // RELATED_STEPS):
+                y, sr = librosa.load(root + "/" + filename, sr=self.sampling_rate, duration=SAMPLE_LENGTH * RELATED_STEPS, offset=sample_nr * offset)
+                samples.append(y)
+                labels.append(label)
         else:
+            offset = (duration - SAMPLE_LENGTH) / (SAMPLES_PR_FILE - 1)
             for sample_nr in range(SAMPLES_PR_FILE):
+                # May be better to load the file in its entirity and then split it into several samples
                 y, sr = librosa.load(root + "/" + filename, sr=self.sampling_rate, duration=SAMPLE_LENGTH, offset=sample_nr * offset)
                 samples.append(y)
                 labels.append(label)

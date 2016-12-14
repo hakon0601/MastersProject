@@ -3,7 +3,6 @@ from NeuralNetwork.recurrent_neural_network import RecurrentNN
 
 
 class MainProgram():
-
     def __init__(self, feature_extractor, neural_network, data_loader):
         self.feature_extractor = feature_extractor
         self.neural_network = neural_network

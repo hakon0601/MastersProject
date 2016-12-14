@@ -82,7 +82,7 @@ class GUI(tk.Tk):
             neural_network = recurrent_neural_network.RecurrentNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
                                                                   activation_functions_type=list(map(int, self.activation_functions_entry.get().split())),
                                                                   enable_bias=True if self.bias_box.get() == "True" else False,
-                                                                     learning_rate=float(self.learning_rate_entry.get()),
+                                                                  learning_rate=float(self.learning_rate_entry.get()),
                                                                   dropout_rate=float(self.dropout_rate_entry.get()),
                                                                   cell_type=self.cell_types.index(self.cell_type_box.get()),
                                                                   time_related_steps=int(self.time_related_steps_entry.get()),
@@ -149,7 +149,7 @@ class GUI(tk.Tk):
 
         self.bias_label = tk.Label(self, text="Bias")
         self.bias_value = tk.BooleanVar()
-        self.bias_box = self.combo(self, [False, True], self.bias_value)
+        self.bias_box = self.combo(self, [BIAS_ENABLED, not BIAS_ENABLED], self.bias_value)
 
         self.learning_rate_label = tk.Label(self, text="Learning rate")
         learning_rate_value = tk.DoubleVar()
@@ -218,7 +218,6 @@ class GUI(tk.Tk):
         x = (ws/2) - (w/2)
         y = (hs/2) - (h/2)
         self.geometry('%dx%d+%d+%d' % (w, h, x, y))
-
 
 
 if __name__ == "__main__":
