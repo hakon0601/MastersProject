@@ -20,6 +20,7 @@ class RecurrentNN(NeuralNetworkBase):
         self.epochs = epochs
 
     def construct_neural_network(self, input_size=1000):
+        tf.reset_default_graph()
         input_size = int(input_size // self.time_related_steps)
         self.layers_size = [input_size] + self.hidden_layers + [NR_OF_CLASSES]
 

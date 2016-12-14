@@ -110,14 +110,22 @@ class DataLoader():
         bitarray = ([0]*(k - len(bitarray))) + bitarray
         return bitarray
 
-    def pickle_save(self, data_dict):
+    @staticmethod
+    def pickle_save(data_dict):
         # Adding the most recent data to the file
-        with open('objs.pickle', 'wb') as f:
+        with open(DATA_PATH + '/objs.pickle', 'wb') as f:
             pickle.dump(data_dict, f)
 
-    def pickle_load(self):
-        with open('objs.pickle', 'rb') as f:
+    @staticmethod
+    def pickle_load():
+        with open(DATA_PATH + '/objs.pickle', 'rb') as f:
             return pickle.load(f)
+
+    @staticmethod
+    def pickle_create():
+        if not os.path.exists(DATA_PATH + '/objs.pickle'):
+            open(DATA_PATH + '/objs.pickle', 'a').close()
+            DataLoader.pickle_save(data_dict={})
 
     def get_parameter_key(self, recurrent):
         return str(NR_OF_CLASSES) + str(TEST_PERCENTAGE) + str(SAMPLING_RATE) + \
@@ -140,7 +148,7 @@ class DataLoader():
             # The length of each sample is the sample length * number of related steps
             offset = (duration - (SAMPLE_LENGTH * RELATED_STEPS)) / (SAMPLES_PR_FILE // RELATED_STEPS)
             for sample_nr in range(SAMPLES_PR_FILE // RELATED_STEPS):
-                y, sr = librosa.load(root + "/" + filename, sr=self.sampling_rate, duration=SAMPLE_LENGTH * RELATED_STEPS, offset=sample_nr * offset)
+                y, sr = librosa.load(root + "/AMTRecordings/" + filename, sr=self.sampling_rate, duration=SAMPLE_LENGTH * RELATED_STEPS, offset=sample_nr * offset)
                 samples.append(y)
                 labels.append(label)
         else:
@@ -154,7 +162,7 @@ class DataLoader():
         return samples, labels
 
     def get_data_filenames(self):
-        for path, subdirs, files in os.walk(DATA_PATH):
+        for path, subdirs, files in os.walk(DATA_PATH + "/AMTRecordings"):
             return [name for name in files]
 
     def filter_only_included_vessels(self, all_data_filenames):

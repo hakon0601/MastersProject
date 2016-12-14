@@ -13,6 +13,7 @@ TODO
 
 * Do activation function in gui usefull (Dynamic change)
 
+
 DONE
 * Lage slides til kongsberg møte
 * Legg til støy-data og dropout
@@ -20,3 +21,4 @@ DONE
 * Støye til alle samples, noise reducing auto-encoder
 * Finne ut hvor høy feilmargin mennesker har. = ca 70%, lavere når miljøet er variabelt, ikke ferjeleie, øvelse, osv
 * Få RNN til å funke, med fler nivå
+* Make it possible to change FE method and reuse variables after one run

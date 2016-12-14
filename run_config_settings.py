@@ -8,7 +8,7 @@ from os import path
 
 from math import ceil
 
-DATA_PATH = path.dirname(path.realpath(__file__)) + "/Data/AMTRecordings"
+DATA_PATH = path.dirname(path.realpath(__file__)) + "/Data"
 
 
 NR_OF_CLASSES = 7

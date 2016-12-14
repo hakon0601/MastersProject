@@ -32,6 +32,9 @@ class GUI(tk.Tk):
         # self.center_window()
 
         self.build_parameter_menu()
+        dl.DataLoader.pickle_create()
+        self.main_program = main_program.MainProgram()
+
 
     def build_parameter_menu(self):
         tk.Label(self, text="Feature extraction technique").grid(row=0)
@@ -90,7 +93,7 @@ class GUI(tk.Tk):
         elif NNtype == self.neural_network_types[3]:
             neural_network = radial_basis_function_neural_network.RadialBasisFunctionNN()
 
-        main_thread = main_program.MainProgram(feature_extractor, neural_network, data_loader=data_loader)
+        self.main_program.run(feature_extractor=feature_extractor, neural_network=neural_network, data_loader=data_loader)
 
     def combo(self, frame, box_values, box_value):
         box = ttk.Combobox(frame, width=30, textvariable=box_value)
