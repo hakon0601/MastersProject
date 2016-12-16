@@ -98,8 +98,9 @@ class RecurrentNN(NeuralNetworkBase):
             cell = rnn_cell.DropoutWrapper(cell, output_keep_prob=self.keep_prob)
             cells.append(cell)
         multilayer_cell = rnn_cell.MultiRNNCell(cells)
+        multilayer_cell = rnn_cell.DropoutWrapper(multilayer_cell, output_keep_prob=self.keep_prob)
 
-        output, _ = tf.nn.dynamic_rnn(multilayer_cell, self.input_tensor, dtype=tf.float32)
+        output, state = tf.nn.dynamic_rnn(multilayer_cell, self.input_tensor, dtype=tf.float32)
         output = tf.transpose(output, [1, 0, 2])
         last = tf.gather(output, int(output.get_shape()[0]) - 1) # TODO this may be a bottleneck (memory)
 

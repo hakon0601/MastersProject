@@ -2,4 +2,3 @@
 Data/
 __pycache__/
 *.pyc
-GUI/objs.pickle

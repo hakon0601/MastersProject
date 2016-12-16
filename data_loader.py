@@ -77,24 +77,7 @@ class DataLoader():
         return samples, labels, samples_test, labels_test
 
     def load_mock_data(self):
-
         return self.load_mnist()
-
-        # Autoencoder Make sure you dont test accuracy using a one-hot approach
-        # samples = [np.array(self.bitfield(i, 3)) for i in range(8)]
-        # labels = samples
-
-        samples = [np.array([1, 0]) if i%2==0 else np.array([0, 1])  for i in range(20)] + [np.array([0, 0]) for i in range(10)]
-        labels = [[1, 0] if i%2==0 else [0, 1]  for i in range(20)] + [[0, 1] for i in range(10)]
-        '''
-        samples = [[0 for i in range(SAMPELING_RATE//2)] + [1 for j in range(SAMPELING_RATE//2)] for k in range(NR_OF_CLASSES*10*SAMPLES_PR_FILE//2)]
-        samples += [[1 for i in range(SAMPELING_RATE//2)] + [0 for j in range(SAMPELING_RATE//2)] for k in range(NR_OF_CLASSES*10*SAMPLES_PR_FILE//2)]
-        labels = [[1, 0] for i in range(NR_OF_CLASSES*10*SAMPLES_PR_FILE//2)] + [[0, 1] for i in range(NR_OF_CLASSES*10*SAMPLES_PR_FILE//2)]
-        '''
-        samples_test = samples
-        labels_test = labels
-
-        return samples, labels, samples_test, labels_test
 
     def load_mnist(self):
         mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
@@ -103,12 +86,6 @@ class DataLoader():
         samples_test = mnist.test.images
         labels_test = mnist.test.labels
         return samples, labels, samples_test, labels_test
-
-
-    def bitfield(self, n, k):
-        bitarray = [int(digit) for digit in bin(n)[2:]]
-        bitarray = ([0]*(k - len(bitarray))) + bitarray
-        return bitarray
 
     @staticmethod
     def pickle_save(data_dict):
@@ -152,10 +129,10 @@ class DataLoader():
                 samples.append(y)
                 labels.append(label)
         else:
-            offset = (duration - SAMPLE_LENGTH) / (SAMPLES_PR_FILE - 1)
+            offset = (duration - SAMPLE_LENGTH) / max(1, (SAMPLES_PR_FILE - 1))
             for sample_nr in range(SAMPLES_PR_FILE):
                 # May be better to load the file in its entirity and then split it into several samples
-                y, sr = librosa.load(root + "/" + filename, sr=self.sampling_rate, duration=SAMPLE_LENGTH, offset=sample_nr * offset)
+                y, sr = librosa.load(root + "/AMTRecordings/" + filename, sr=self.sampling_rate, duration=SAMPLE_LENGTH, offset=sample_nr * offset)
                 samples.append(y)
                 labels.append(label)
 
@@ -187,9 +164,3 @@ class DataLoader():
                 noisy_samples.append(samples_from_one_file[i] + noise)
                 noisy_labels.append(label)
         return noisy_samples, noisy_labels
-
-
-
-
-
-

@@ -1,6 +1,7 @@
 import tkinter as tk
 from run_config_settings import *
 import ttk
+import librosa
 
 import data_loader as dl
 from FeatureExtraction import short_time_fourier_transform, wavelet_transform, mel_frequency_cepstral_coefficients, spectral_density_estimation, no_feature_extraction
@@ -16,8 +17,8 @@ class GUI(tk.Tk):
                                      "Mel-frequency Cepstral Coefficients",
                                      "Spectral Density Estimation"
                                      ]
-    neural_network_types = ["Recurrent Neural Network",
-                            "Convolutional Neural Network",
+    neural_network_types = ["Convolutional Neural Network",
+                            "Recurrent Neural Network",
                             "Standard Feed-forward Neural Network",
                             "Radial Basis Function Network"
                              ]
@@ -79,9 +80,9 @@ class GUI(tk.Tk):
                                                                        learning_rate=float(self.learning_rate_entry.get()),
                                                                        dropout_rate=float(self.dropout_rate_entry.get()),
                                                                        epocs=int(self.training_iterations_entry.get()))
-        elif NNtype == self.neural_network_types[1]:
-            neural_network = convolutional_neural_network.ConvolutionalNN()
         elif NNtype == self.neural_network_types[0]:
+            neural_network = convolutional_neural_network.ConvolutionalNN()
+        elif NNtype == self.neural_network_types[1]:
             neural_network = recurrent_neural_network.RecurrentNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
                                                                   activation_functions_type=list(map(int, self.activation_functions_entry.get().split())),
                                                                   enable_bias=True if self.bias_box.get() == "True" else False,
@@ -183,7 +184,7 @@ class GUI(tk.Tk):
     def update_nn_options_menu(self):
         value_of_combo = self.NNbox.get()
         index = self.neural_network_types.index(value_of_combo)
-        if index == 0 or index == 2:
+        if index == 0 or index == 1 or index == 2:
             self.hidden_layers_label.grid(row=1, column=3)
             self.hidden_layers_entry.grid(row=1, column=4)
             self.activation_functions_entry.grid(row=2, column=4)
@@ -197,14 +198,14 @@ class GUI(tk.Tk):
             self.training_iterations_label.grid(row=6, column=3)
             self.training_iterations_entry.grid(row=6, column=4)
 
-        if index == 0:
+        if index == 1:
             self.cell_type_label.grid(row=7, column=3)
             self.cell_type_box.grid(row=7, column=4)
             self.time_related_steps_label.grid(row=8, column=3)
             self.time_related_steps_entry.grid(row=8, column=4)
             self.start_button.grid(row=9, column=2)
-        elif index == 1:
-            pass
+        elif index == 0:
+            self.start_button.grid(row=7, column=2)
         elif index == 2:
             self.cell_type_label.grid_forget()
             self.cell_type_box.grid_forget()
