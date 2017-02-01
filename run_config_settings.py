@@ -9,6 +9,8 @@ from os import path
 from math import ceil
 
 DATA_PATH = path.dirname(path.realpath(__file__)) + "/Data"
+LOG_PATH = "/tmp/tensorflow/mastersproject"
+
 
 
 NR_OF_CLASSES = 7
@@ -16,11 +18,11 @@ INCLUDED_VESSELS = ["ferry", "nansen", "sejong", "speedboat", "svendborgmaersk",
 # INCLUDED_VESSELS = ["speedboat", "tanker"]
 # INCLUDED_VESSELS = ["ferry", "speedboat", "tanker", "sub"]
 TEST_PERCENTAGE = 0.1
-SAMPLING_RATE = 1000
+SAMPLING_RATE = 1024
 NR_OF_FILES = 85
 # 85 files in total
 SAMPLES_PR_FILE = 100
-SAMPLE_LENGTH = 0.2 # sec
+SAMPLE_LENGTH = 1.0 # sec
 
 FFT_WINDOW_SIZE = 2048
 N_MFCC = 20
@@ -47,13 +49,13 @@ USE_PRELOADED_DATA = True
 # if SAMPLES_PR_FILE * SAMPLE_LENGTH > 10:
 #     raise ValueError
 
-BATCH_SIZE = 5
+BATCH_SIZE = 1000
 EPOCS = ceil(NR_OF_FILES * SAMPLES_PR_FILE / BATCH_SIZE) # To ensure all samples being used in training
-EPOCS = 50
+EPOCS = 10
 LEARNING_RATE = 0.001
-BIAS_ENABLED = True
+BIAS_ENABLED = False
 DROPOUT_RATE = 0.9
-DROPOUT_ENABLED = True
+DROPOUT_ENABLED = False
 
 ACTIVATION_FUNCTIONS = "1"
 HIDDEN_LAYERS = "200 200"

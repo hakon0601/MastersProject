@@ -1,14 +1,15 @@
 import pywt
 import sys
+from FeatureExtraction.feature_extractor_base import FeatureExtractorBase
 
 from math import floor
 
 
-class WaveletTransform():
+class WaveletTransform(FeatureExtractorBase):
     def __init__(self, ):
         pass
 
-    def extract_features(self, samples, show_spectrogram=False):
+    def extract_features(self, samples):
         processed_samples = []
         for i in range(len(samples)):
             sample = samples[i]

@@ -5,5 +5,5 @@ class FeatureExtractorBase():
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def extract_features(self, data, show_spectrogram=False):
+    def extract_features(self, data):
         return

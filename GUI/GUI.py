@@ -1,11 +1,10 @@
 import tkinter as tk
 from run_config_settings import *
 import ttk
-import librosa
 
 import data_loader as dl
-from FeatureExtraction import short_time_fourier_transform, wavelet_transform, mel_frequency_cepstral_coefficients, spectral_density_estimation, no_feature_extraction
-from NeuralNetwork import feed_forward_neural_network, convolutional_neural_network, recurrent_neural_network, radial_basis_function_neural_network
+from FeatureExtraction import short_time_fourier_transform, wavelet_transform, mel_frequency_cepstral_coefficients, spectral_density_estimation, no_feature_extraction, spectrogram
+from NeuralNetwork import feed_forward_neural_network, convolutional_neural_network, recurrent_neural_network, radial_basis_function_neural_network, convolutional_neural_network_with_sonar_data
 import main_program
 
 
@@ -15,7 +14,8 @@ class GUI(tk.Tk):
                                      "Short-time Fourier Transform",
                                      "Wavelet Transform",
                                      "Mel-frequency Cepstral Coefficients",
-                                     "Spectral Density Estimation"
+                                     "Spectral Density Estimation",
+                                     "Spectrogram"
                                      ]
     neural_network_types = ["Convolutional Neural Network",
                             "Recurrent Neural Network",
@@ -70,6 +70,8 @@ class GUI(tk.Tk):
             feature_extractor = mel_frequency_cepstral_coefficients.MFCC(n_mfcc=int(self.n_mfcc_entry.get()))
         elif FEtype == self.feature_extraction_techniques[4]:
             feature_extractor = spectral_density_estimation.SpectralDensityEstimation()
+        elif FEtype == self.feature_extraction_techniques[5]:
+            feature_extractor = spectrogram.Spectrogram()
 
 
         NNtype = self.NNbox.get()
@@ -81,7 +83,8 @@ class GUI(tk.Tk):
                                                                        dropout_rate=float(self.dropout_rate_entry.get()),
                                                                        epocs=int(self.training_iterations_entry.get()))
         elif NNtype == self.neural_network_types[0]:
-            neural_network = convolutional_neural_network.ConvolutionalNN()
+            neural_network = convolutional_neural_network_with_sonar_data.ConvolutionalNN()
+            # neural_network = convolutional_neural_network.ConvolutionalNN()
         elif NNtype == self.neural_network_types[1]:
             neural_network = recurrent_neural_network.RecurrentNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
                                                                   activation_functions_type=list(map(int, self.activation_functions_entry.get().split())),

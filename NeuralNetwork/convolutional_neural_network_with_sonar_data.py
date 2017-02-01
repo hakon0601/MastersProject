@@ -7,7 +7,7 @@ import numpy as np
 import random
 from tensorflow.python.ops import rnn, rnn_cell
 
-from tensorflow.examples.tutorials.mnist import input_data
+# from tensorflow.examples.tutorials.mnist import input_data
 
 
 class ConvolutionalNN(NeuralNetworkBase):
@@ -22,7 +22,7 @@ class ConvolutionalNN(NeuralNetworkBase):
         self.epochs = epochs
 
     def construct_neural_network(self, input_size=1000):
-        self.mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
+        # self.mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
 
         print("data loaded successfully...")
 
@@ -32,7 +32,7 @@ class ConvolutionalNN(NeuralNetworkBase):
         self.x = tf.placeholder(tf.float32, [None, 784])
         x_image = tf.reshape(self.x, [-1,28,28,1])
 
-        self.y_ = tf.placeholder(tf.float32, [None, 10])
+        self.y_ = tf.placeholder(tf.float32, [None, NR_OF_CLASSES])
 
         # First Convolutional Layer
         W_conv1 = tf.Variable(tf.truncated_normal([5, 5, 1, 32], stddev=0.1))
@@ -49,10 +49,10 @@ class ConvolutionalNN(NeuralNetworkBase):
         h_pool2 = tf.nn.max_pool(h_conv2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
         # Densely Connected Layer
-        W_fc1 = tf.Variable(tf.truncated_normal([7 * 7 * 64, 1024], stddev=0.1))
+        W_fc1 = tf.Variable(tf.truncated_normal([7*7*64, 1024], stddev=0.1))
         b_fc1 = tf.Variable(tf.constant(0.1, shape=[1024]))
 
-        h_pool2_flat = tf.reshape(h_pool2, [-1, 7*7*64])
+        h_pool2_flat = tf.reshape(h_pool2, [-1, 7*7*64]) #7*7*64])
         h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
         # Dropout
@@ -60,15 +60,15 @@ class ConvolutionalNN(NeuralNetworkBase):
         self.h_fc1_drop = tf.nn.dropout(h_fc1, self.keep_prob)
 
         # Readout Layer
-        W_fc2 = tf.Variable(tf.truncated_normal([1024, 10], stddev=0.1))
-        b_fc2 = tf.Variable(tf.constant(0.1, shape=[10]))
+        W_fc2 = tf.Variable(tf.truncated_normal([1024, NR_OF_CLASSES], stddev=0.1))
+        b_fc2 = tf.Variable(tf.constant(0.1, shape=[NR_OF_CLASSES]))
 
         y_conv=tf.nn.softmax(tf.matmul(self.h_fc1_drop, W_fc2) + b_fc2)
 
 
         # Train and Evaluate the Model
         self.cross_entropy = tf.reduce_mean(-tf.reduce_sum(self.y_ * tf.log(y_conv), reduction_indices=[1]))
-        self.train_step = tf.train.AdamOptimizer(LEARNING_RATE).minimize(self.cross_entropy)
+        self.train_step = tf.train.AdamOptimizer(1e-4).minimize(self.cross_entropy)
         self.correct_prediction = tf.equal(tf.argmax(y_conv,1), tf.argmax(self.y_,1))
         self.accuracy = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
 
@@ -95,17 +95,21 @@ class ConvolutionalNN(NeuralNetworkBase):
         # TODO just replace the mnist methods to use the sample produced på the spectrogram class
         self.sess.run(tf.initialize_all_variables())
         for i in range(20000):
-            batch = self.mnist.train.next_batch(50)
+            # batch = self.mnist.train.next_batch(50)
+            batch_xs, batch_ys = self.get_random_batch(BATCH_SIZE, samples, labels)
+
             if i%100 == 0:
-                train_accuracy = self.accuracy.eval(feed_dict={self.x:batch[0], self.y_: batch[1], self.keep_prob: 1.0})
-                print("step %d, training accuracy %g"%(i, train_accuracy))
-            self.train_step.run(feed_dict={self.x: batch[0], self.y_: batch[1], self.keep_prob: 0.5})
+                train_accuracy = self.accuracy.eval(feed_dict={self.x: batch_xs, self.y_: batch_ys, self.keep_prob: 1.0})
+                print("step %d, training accuracy %.7f"%(i, train_accuracy))
+            self.train_step.run(feed_dict={self.x: batch_xs, self.y_: batch_ys, self.keep_prob: 0.5})
 
         crctPreds = np.empty([1, 1])
 
-        for i in range(2000):
-            batch = self.mnist.test.next_batch(50)
-            crctPreds = np.append(crctPreds, np.matrix(self.correct_prediction.eval(feed_dict={self.x:batch[0], self.y_: batch[1], self.keep_prob: 1.0})))
+        for i in range(20000):
+            # batch = self.mnist.test.next_batch(50)
+            batch_xs, batch_ys = self.get_random_batch(BATCH_SIZE, samples_test, labels_test)
+
+            crctPreds = np.append(crctPreds, np.matrix(self.correct_prediction.eval(feed_dict={self.x:batch_xs, self.y_: batch_ys, self.keep_prob: 1.0})))
             print("Prediction size: ", crctPreds.shape)
 
         crctPreds.astype(int)
@@ -151,9 +155,9 @@ class ConvolutionalNN(NeuralNetworkBase):
         return rand_samples, rand_labels
 
     def test_accuracy_of_solution(self, samples, labels, samples_test, labels_test, reshape=True):
-        if reshape:
-            samples = self.reshape_samples(samples)
-            samples_test = self.reshape_samples(samples_test)
+        # if reshape:
+        #     samples = self.reshape_samples(samples)
+        #     samples_test = self.reshape_samples(samples_test)
 
         index_of_highest_output_neurons = tf.argmax(self.activation_model, 1)
         index_of_correct_label = tf.argmax(self.output_tensor, 1)

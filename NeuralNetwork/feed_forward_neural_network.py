@@ -56,12 +56,26 @@ class FeedForwardNN(NeuralNetworkBase):
         self.train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost)
         self.predict_op = self.model()
 
+        index_of_highest_output_neurons = tf.argmax(self.activation_model, 1)
+        index_of_correct_label = tf.argmax(self.layer_tensors[-1], 1)
+        correct_predictions = tf.equal(index_of_highest_output_neurons, index_of_correct_label)
+        # Computes the average of a list of booleans
+        self.accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
+
+        tf.scalar_summary("cost", self.cost)
+        tf.scalar_summary("accuracy", self.accuracy)
+
+        self.summary_op = tf.merge_all_summaries()
+
+
         self.init = tf.global_variables_initializer()
 
     def train_neural_network(self, samples, labels, samples_test, labels_test):
         self.sess = tf.Session()
         self.sess.run(self.init)
         # self.test_accuracy_of_solution(samples, labels, samples_test, labels_test)
+
+        writer = tf.train.SummaryWriter(LOG_PATH, graph=tf.get_default_graph())
 
         for epoch in range(self.epocs):
             avg_cost = 0.
@@ -71,11 +85,10 @@ class FeedForwardNN(NeuralNetworkBase):
             for j in range(nr_of_batches_to_cover_all_samples):
                 # batch_xs, batch_ys = self.get_next_batch(i*BATCH_SIZE, BATCH_SIZE, samples, labels)
                 batch_xs, batch_ys = self.get_random_batch(BATCH_SIZE, samples, labels)
-                _, c = self.sess.run([self.train_step, self.cost], feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys, self.keep_prob: self.dropout_rate})
+                _, summary = self.sess.run([self.train_step, self.summary_op], feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys, self.keep_prob: self.dropout_rate})
+                writer.add_summary(summary, epoch * nr_of_batches_to_cover_all_samples + j)
 
-                avg_cost += c / nr_of_batches_to_cover_all_samples
             if epoch % 1 == 0:
-                print("\tEpoch:", '%04d' % (epoch+1), "cost=", "{:.9f}".format(avg_cost))
                 self.test_accuracy_of_solution(samples, labels, samples_test, labels_test)
         print("Optimization Finished!")
 
@@ -99,13 +112,8 @@ class FeedForwardNN(NeuralNetworkBase):
         return rand_samples, rand_labels
 
     def test_accuracy_of_solution(self, samples, labels, samples_test, labels_test):
-        index_of_highest_output_neurons = tf.argmax(self.predict_op, 1)
-        index_of_correct_label = tf.argmax(self.layer_tensors[-1], 1)
-        correct_predictions = tf.equal(index_of_highest_output_neurons, index_of_correct_label)
-        # Computes the average of a list of booleans
-        accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
-        accuracy_test = self.sess.run(accuracy, feed_dict={self.layer_tensors[0]: samples_test, self.layer_tensors[-1]: labels_test, self.keep_prob: 1})
-        accuracy_training = self.sess.run(accuracy, feed_dict={self.layer_tensors[0]: samples, self.layer_tensors[-1]: labels, self.keep_prob: 1})
+        accuracy_test = self.sess.run(self.accuracy, feed_dict={self.layer_tensors[0]: samples_test, self.layer_tensors[-1]: labels_test, self.keep_prob: 1})
+        accuracy_training = self.sess.run(self.accuracy, feed_dict={self.layer_tensors[0]: samples, self.layer_tensors[-1]: labels, self.keep_prob: 1})
         print("Accuracy test:", accuracy_test, "Accuracy training:", accuracy_training)
 
     def model(self):

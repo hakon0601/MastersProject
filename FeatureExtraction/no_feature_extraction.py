@@ -10,5 +10,5 @@ class NoFE(FeatureExtractorBase):
     def __init__(self):
         pass
 
-    def extract_features(self, samples, show_spectrogram=False):
+    def extract_features(self, samples):
         return samples

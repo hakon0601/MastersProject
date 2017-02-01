@@ -10,7 +10,7 @@ class MFCC(FeatureExtractorBase):
     def __init__(self, n_mfcc=20):
         self.n_mfcc = n_mfcc
 
-    def extract_features(self, samples, show_spectrogram=False):
+    def extract_features(self, samples):
         processed_samples = []
         for i in range(len(samples)):
             sample = samples[i]
