@@ -12,12 +12,12 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('data_dir', '/tmp/data/', 'Directory for storing data')
 
 class FeedForwardNN(NeuralNetworkBase):
-    def __init__(self, hidden_layers=[10], activation_functions_type=[0, 0], enable_bias=False, learning_rate=0.5, dropout_rate=0.9, epocs=100):
+    def __init__(self, hidden_layers=[10], activation_functions_type=[0, 0], enable_bias=False, learning_rate=0.5, dropout_rate=0.9, epochs=100):
         self.hidden_layers = hidden_layers
         self.activation_functions_type = activation_functions_type
         self.enable_bias = enable_bias
         self.learning_rate = learning_rate
-        self.epocs = epocs
+        self.epochs = epochs
         self.dropout_rate = dropout_rate
 
 
@@ -77,10 +77,10 @@ class FeedForwardNN(NeuralNetworkBase):
 
         writer = tf.train.SummaryWriter(LOG_PATH, graph=tf.get_default_graph())
 
-        for epoch in range(self.epocs):
+        for epoch in range(self.epochs):
             avg_cost = 0.
             nr_of_batches_to_cover_all_samples = int(len(samples)/BATCH_SIZE)
-            sys.stdout.write("\rTraining network %02d%%" % floor((epoch + 1) * (100 / self.epocs)))
+            sys.stdout.write("\rTraining network %02d%%" % floor((epoch + 1) * (100 / self.epochs)))
             sys.stdout.flush()
             for j in range(nr_of_batches_to_cover_all_samples):
                 # batch_xs, batch_ys = self.get_next_batch(i*BATCH_SIZE, BATCH_SIZE, samples, labels)

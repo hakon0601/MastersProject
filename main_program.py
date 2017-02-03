@@ -29,7 +29,7 @@ class MainProgram():
         self.samples, self.labels, self.samples_test, self.labels_test = data_loader.load_data(recurrent=isinstance(self.neural_network, RecurrentNN))
         print(len(self.samples), "Samples loaded,", len(self.samples_test), "Test samples loaded")
         self.processed_samples, self.processed_samples_test = self.extract_features(self.samples, self.samples_test)
-        self.feature_extractor.save_specgrams(samples=self.samples, labels=self.labels, select_random=True)
+        # self.feature_extractor.save_specgrams(samples=self.samples, labels=self.labels, select_random=True)
         self.construct_neural_network(input_size=len(self.processed_samples[0]))
         self.train_neural_network(self.processed_samples, self.labels, self.processed_samples_test, self.labels_test)
         self.test_accuracy_of_solution(self.processed_samples, self.labels, self.processed_samples_test, self.labels_test)

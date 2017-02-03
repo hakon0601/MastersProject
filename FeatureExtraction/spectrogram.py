@@ -15,7 +15,7 @@ class Spectrogram(FeatureExtractorBase):
     def extract_features(self, samples):
         processed_samples = []
         for i in range(len(samples)):
-            A = plt.specgram(samples[i], NFFT=2**6 - 1, Fs=SAMPLING_RATE, noverlap=0) # nooverlap = NFFT/2
+            A = plt.specgram(samples[i], NFFT=2**6 - 1, Fs=SAMPLING_RATE, noverlap=0) #32*16
             processed_samples.append(A[0].flatten())
 
             sys.stdout.write("\rExtracting features %d%%" % floor((i + 1) * (100/len(samples))))
@@ -32,6 +32,5 @@ class Spectrogram(FeatureExtractorBase):
             label = INCLUDED_VESSELS[np.argmax(labels[r])]
             plt.figure()
             A = plt.specgram(samples[r], NFFT=2**6 - 1, Fs=SAMPLING_RATE, noverlap=0)
-            # plt.colorbar(format='%+2.0f dB')
-            plt.savefig("spec_" + label + "_" + str(r) + ".png")
+            plt.savefig("spec_" + label + "_" + str(i) + ".png")
             plt.close("all")

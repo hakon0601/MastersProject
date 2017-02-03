@@ -81,9 +81,14 @@ class GUI(tk.Tk):
                                                                        enable_bias=True if self.bias_box.get() == "True" else False,
                                                                        learning_rate=float(self.learning_rate_entry.get()),
                                                                        dropout_rate=float(self.dropout_rate_entry.get()),
-                                                                       epocs=int(self.training_iterations_entry.get()))
+                                                                       epochs=int(self.training_iterations_entry.get()))
         elif NNtype == self.neural_network_types[0]:
-            neural_network = convolutional_neural_network_with_sonar_data.ConvolutionalNN()
+            neural_network = convolutional_neural_network_with_sonar_data.ConvolutionalNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
+                                                                       activation_functions_type=list(map(int, self.activation_functions_entry.get().split())),
+                                                                       enable_bias=True if self.bias_box.get() == "True" else False,
+                                                                       learning_rate=float(self.learning_rate_entry.get()),
+                                                                       dropout_rate=float(self.dropout_rate_entry.get()),
+                                                                       epochs=int(self.training_iterations_entry.get()))
             # neural_network = convolutional_neural_network.ConvolutionalNN()
         elif NNtype == self.neural_network_types[1]:
             neural_network = recurrent_neural_network.RecurrentNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
