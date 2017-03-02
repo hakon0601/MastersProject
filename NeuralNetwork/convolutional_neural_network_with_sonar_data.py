@@ -9,7 +9,7 @@ from tensorflow.python.ops import rnn, rnn_cell
 
 
 class ConvolutionalNN(NeuralNetworkBase):
-    def __init__(self, hidden_layers=[10, 20], activation_functions_type=[0, 0], enable_bias=False, learning_rate=0.5, dropout_rate=0.9, cell_type=0 , time_related_steps=20, epochs=100):
+    def __init__(self, hidden_layers=[10, 20], activation_functions_type=[0, 0], enable_bias=False, learning_rate=0.5, dropout_rate=0.9, cell_type=0 , time_related_steps=20, epochs=100, DCL_size=1024):
         self.hidden_layers = hidden_layers
         self.activation_functions_type = activation_functions_type
         self.enable_bias = enable_bias
@@ -18,6 +18,7 @@ class ConvolutionalNN(NeuralNetworkBase):
         self.cell_type = cell_type
         self.time_related_steps = time_related_steps
         self.epochs = epochs
+        self.DCL_size = DCL_size
 
     def construct_neural_network(self, input_size=1000):
         # self.mnist = input_data.read_data_sets("/tmp/data/", one_hot=True)
@@ -190,9 +191,9 @@ class ConvolutionalNN(NeuralNetworkBase):
         # h_pool2 = tf.nn.max_pool(h_conv2, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
 
         # Densely Connected Layer
-        W_fc1 = tf.Variable(tf.truncated_normal([4*2*64, 1024], stddev=0.1)) #    16*8*32, 64], stddev=0.1))
+        W_fc1 = tf.Variable(tf.truncated_normal([4*2*64, self.DCL_size], stddev=0.1)) #    16*8*32, 64], stddev=0.1))
         # W_fc1 = tf.Variable(tf.truncated_normal([int((32/(2**len(self.hidden_layers)))*(16/(2**len(self.hidden_layers)))*32)], stddev=0.1)) #    16*8*32, 64], stddev=0.1))
-        b_fc1 = tf.Variable(tf.constant(0.1, shape=[1024]))
+        b_fc1 = tf.Variable(tf.constant(0.1, shape=[self.DCL_size]))
 
         h_pool2_flat = tf.reshape(conv_layers[-1], [-1, 4*2*64]) #8*4*64)
         h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
@@ -202,7 +203,7 @@ class ConvolutionalNN(NeuralNetworkBase):
         self.h_fc1_drop = tf.nn.dropout(h_fc1, self.keep_prob)
 
         # Readout Layer
-        W_fc2 = tf.Variable(tf.truncated_normal([1024, NR_OF_CLASSES], stddev=0.1))
+        W_fc2 = tf.Variable(tf.truncated_normal([self.DCL_size, NR_OF_CLASSES], stddev=0.1))
         b_fc2 = tf.Variable(tf.constant(0.1, shape=[NR_OF_CLASSES]))
 
         return tf.nn.softmax(tf.matmul(self.h_fc1_drop, W_fc2) + b_fc2)

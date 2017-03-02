@@ -22,15 +22,15 @@ SAMPLING_RATE = 1024
 NR_OF_FILES = 85
 # 85 files in total
 SAMPLES_PR_FILE = 100
-SAMPLE_LENGTH = 1.0 # sec
+SAMPLE_LENGTH = 0.1 # sec
 
 FFT_WINDOW_SIZE = 2048
 N_MFCC = 20
 
 # Only one of these can be true at once
 # Describes what part of the dataset is being used as test data
-USE_WHOLE_FILE_AS_TEST = False # TODO fix the other two options for recurrent networks
-USE_END_OF_FILE_AS_TEST = True
+USE_WHOLE_FILE_AS_TEST = True # TODO fix the other two options for recurrent networks
+USE_END_OF_FILE_AS_TEST = False
 USE_RANDOM_SAMPLES_AS_TEST = False
 
 # Recurrent NN
@@ -51,8 +51,8 @@ USE_PRELOADED_DATA = True
 
 BATCH_SIZE = 10
 EPOCS = ceil(NR_OF_FILES * SAMPLES_PR_FILE / BATCH_SIZE) # To ensure all samples being used in training
-EPOCS = 100
-LEARNING_RATE = 0.0001
+EPOCS = 10
+LEARNING_RATE = 0.001
 BIAS_ENABLED = False
 DROPOUT_RATE = 0.9
 DROPOUT_ENABLED = False

@@ -19,8 +19,7 @@ class GUI(tk.Tk):
                                      ]
     neural_network_types = ["Convolutional Neural Network",
                             "Recurrent Neural Network",
-                            "Standard Feed-forward Neural Network",
-                            "Radial Basis Function Network"
+                            "Standard Feed-forward Neural Network"
                              ]
     cell_types = ["Basic LSTM Cell",
                   "Basic RNN Cell",
@@ -88,7 +87,8 @@ class GUI(tk.Tk):
                                                                        enable_bias=True if self.bias_box.get() == "True" else False,
                                                                        learning_rate=float(self.learning_rate_entry.get()),
                                                                        dropout_rate=float(self.dropout_rate_entry.get()),
-                                                                       epochs=int(self.training_iterations_entry.get()))
+                                                                       epochs=int(self.training_iterations_entry.get()),
+                                                                       DCL_size=int(self.DCL_size_entry.get()))
             # neural_network = convolutional_neural_network.ConvolutionalNN()
         elif NNtype == self.neural_network_types[1]:
             neural_network = recurrent_neural_network.RecurrentNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
@@ -154,6 +154,21 @@ class GUI(tk.Tk):
         hidden_layers_value.set(HIDDEN_LAYERS)
         self.hidden_layers_entry = tk.Entry(self, textvariable=hidden_layers_value, width=32)
 
+        self.cnn_filters_label = tk.Label(self, text="CNN filters")
+        cnn_filters_value = tk.StringVar()
+        cnn_filters_value.set(CNN_FILTERS)
+        self.cnn_filters_entry = tk.Entry(self, textvariable=cnn_filters_value, width=32)
+
+        self.cnn_channels_label = tk.Label(self, text="CNN channels")
+        cnn_channels_value = tk.StringVar()
+        cnn_channels_value.set(CNN_CHANNELS)
+        self.cnn_channels_entry = tk.Entry(self, textvariable=cnn_channels_value, width=32)
+
+        self.DCL_size_label = tk.Label(self, text="Densely Connected Layer size")
+        DCL_size_value = tk.IntVar()
+        DCL_size_value.set(DCL_SIZE)
+        self.DCL_size_entry = tk.Entry(self, textvariable=DCL_size_value, width=32)
+
         self.activation_functions_label = tk.Label(self, text="Activation functions")
         activation_functions_value = tk.StringVar()
         activation_functions_value.set(ACTIVATION_FUNCTIONS)
@@ -192,40 +207,66 @@ class GUI(tk.Tk):
     def update_nn_options_menu(self):
         value_of_combo = self.NNbox.get()
         index = self.neural_network_types.index(value_of_combo)
-        if index == 0 or index == 1 or index == 2:
-            self.hidden_layers_label.grid(row=1, column=3)
-            self.hidden_layers_entry.grid(row=1, column=4)
-            self.activation_functions_entry.grid(row=2, column=4)
-            self.activation_functions_label.grid(row=2, column=3)
-            self.bias_label.grid(row=3, column=3)
-            self.bias_box.grid(row=3, column=4)
-            self.learning_rate_label.grid(row=4, column=3)
-            self.learning_rate_entry.grid(row=4, column=4)
-            self.dropout_rate_label.grid(row=5, column=3)
-            self.dropout_rate_entry.grid(row=5, column=4)
-            self.training_iterations_label.grid(row=6, column=3)
-            self.training_iterations_entry.grid(row=6, column=4)
 
-        if index == 1:
+        self.bias_label.grid(row=1, column=3)
+        self.bias_box.grid(row=1, column=4)
+        self.learning_rate_label.grid(row=2, column=3)
+        self.learning_rate_entry.grid(row=2, column=4)
+        self.dropout_rate_label.grid(row=3, column=3)
+        self.dropout_rate_entry.grid(row=3, column=4)
+        self.training_iterations_label.grid(row=4, column=3)
+        self.training_iterations_entry.grid(row=4, column=4)
+        self.activation_functions_entry.grid(row=5, column=4)
+        self.activation_functions_label.grid(row=5, column=3)
+
+        if index == 0:
+            self.cnn_filters_label.grid(row=6, column=3)
+            self.cnn_filters_entry.grid(row=6, column=4)
+            self.cnn_channels_label.grid(row=7, column=3)
+            self.cnn_channels_entry.grid(row=7, column=4)
+            self.DCL_size_label.grid(row=8, column=3)
+            self.DCL_size_entry.grid(row=8, column=4)
+            self.start_button.grid(row=9, column=2)
+            self.hidden_layers_label.grid_forget()
+            self.hidden_layers_entry.grid_forget()
+            self.cell_type_label.grid_forget()
+            self.cell_type_box.grid_forget()
+            self.time_related_steps_label.grid_forget()
+            self.time_related_steps_entry.grid_forget()
+        elif index == 1:
+            self.hidden_layers_label.grid(row=6, column=3)
+            self.hidden_layers_entry.grid(row=6, column=4)
             self.cell_type_label.grid(row=7, column=3)
             self.cell_type_box.grid(row=7, column=4)
             self.time_related_steps_label.grid(row=8, column=3)
             self.time_related_steps_entry.grid(row=8, column=4)
             self.start_button.grid(row=9, column=2)
-        elif index == 0:
-            self.start_button.grid(row=7, column=2)
+            self.cnn_channels_label.grid_forget()
+            self.cnn_channels_entry.grid_forget()
+            self.cnn_filters_label.grid_forget()
+            self.cnn_filters_entry.grid_forget()
+            self.DCL_size_label.grid_forget()
+            self.DCL_size_entry.grid_forget()
         elif index == 2:
+            self.hidden_layers_label.grid(row=6, column=3)
+            self.hidden_layers_entry.grid(row=6, column=4)
             self.cell_type_label.grid_forget()
             self.cell_type_box.grid_forget()
             self.time_related_steps_label.grid_forget()
             self.time_related_steps_entry.grid_forget()
+            self.cnn_channels_label.grid_forget()
+            self.cnn_channels_entry.grid_forget()
+            self.cnn_filters_label.grid_forget()
+            self.cnn_filters_entry.grid_forget()
+            self.DCL_size_label.grid_forget()
+            self.DCL_size_entry.grid_forget()
 
             self.start_button.grid(row=7, column=2)
 
     def center_window(self):
         ws = self.winfo_screenwidth()  # width of the screen
         hs = self.winfo_screenheight()  # height of the screen
-        w = 1013
+        w = 1013 + 55
         h = 250
         x = (ws/2) - (w/2)
         y = (hs/2) - (h/2)
