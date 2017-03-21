@@ -15,13 +15,9 @@ class MFCC(FeatureExtractorBase):
         for i in range(len(samples)):
             sample = samples[i]
             processed_sample = librosa.feature.mfcc(sample, n_mfcc=self.n_mfcc)
-            # print("mfcc", processed_sample)
-            a = np.abs(processed_sample) # the magnitude of frequency bin f at frame t
-            # print("a", a)
+            a = np.abs(processed_sample)   # the magnitude of frequency bin f at frame t
             b = np.angle(processed_sample) # the phase of frequency bin f at frame t
-            # print("b", b)
-            c = a.flatten() + b.flatten() # #TODO find a good way to do this
-            # print("c", c)
+            c = a.flatten() + b.flatten()
 
             processed_samples.append(c)
             sys.stdout.write("\rExtracting features %d%%" % floor((i + 1) * (100/len(samples))))

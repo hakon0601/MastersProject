@@ -4,7 +4,7 @@ import ttk
 
 import data_loader as dl
 from FeatureExtraction import short_time_fourier_transform, wavelet_transform, mel_frequency_cepstral_coefficients, spectral_density_estimation, no_feature_extraction, spectrogram
-from NeuralNetwork import feed_forward_neural_network, convolutional_neural_network, recurrent_neural_network, radial_basis_function_neural_network, convolutional_neural_network_with_sonar_data
+from NeuralNetwork import feed_forward_neural_network, convolutional_neural_network, recurrent_neural_network
 import main_program
 
 
@@ -82,14 +82,13 @@ class GUI(tk.Tk):
                                                                        dropout_rate=float(self.dropout_rate_entry.get()),
                                                                        epochs=int(self.training_iterations_entry.get()))
         elif NNtype == self.neural_network_types[0]:
-            neural_network = convolutional_neural_network_with_sonar_data.ConvolutionalNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
-                                                                       activation_functions_type=list(map(int, self.activation_functions_entry.get().split())),
-                                                                       enable_bias=True if self.bias_box.get() == "True" else False,
-                                                                       learning_rate=float(self.learning_rate_entry.get()),
-                                                                       dropout_rate=float(self.dropout_rate_entry.get()),
-                                                                       epochs=int(self.training_iterations_entry.get()),
-                                                                       DCL_size=int(self.DCL_size_entry.get()))
-            # neural_network = convolutional_neural_network.ConvolutionalNN()
+            neural_network = convolutional_neural_network.ConvolutionalNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
+                                                                          activation_functions_type=list(map(int, self.activation_functions_entry.get().split())),
+                                                                          enable_bias=True if self.bias_box.get() == "True" else False,
+                                                                          learning_rate=float(self.learning_rate_entry.get()),
+                                                                          dropout_rate=float(self.dropout_rate_entry.get()),
+                                                                          epochs=int(self.training_iterations_entry.get()),
+                                                                          DCL_size=int(self.DCL_size_entry.get()))
         elif NNtype == self.neural_network_types[1]:
             neural_network = recurrent_neural_network.RecurrentNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
                                                                   activation_functions_type=list(map(int, self.activation_functions_entry.get().split())),
@@ -99,8 +98,6 @@ class GUI(tk.Tk):
                                                                   cell_type=self.cell_types.index(self.cell_type_box.get()),
                                                                   time_related_steps=int(self.time_related_steps_entry.get()),
                                                                   epochs=int(self.training_iterations_entry.get()))
-        elif NNtype == self.neural_network_types[3]:
-            neural_network = radial_basis_function_neural_network.RadialBasisFunctionNN()
 
         self.main_program.run(feature_extractor=feature_extractor, neural_network=neural_network, data_loader=data_loader)
 

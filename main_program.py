@@ -22,9 +22,9 @@ class MainProgram():
         self.neural_network.test_accuracy_of_solution(samples, labels, samples_test, labels_test)
 
     def run(self, feature_extractor, neural_network, data_loader):
+        self.data_loader = data_loader
         self.feature_extractor = feature_extractor
         self.neural_network = neural_network
-        self.data_loader = data_loader
 
         self.samples, self.labels, self.samples_test, self.labels_test = data_loader.load_data(recurrent=isinstance(self.neural_network, RecurrentNN))
         print(len(self.samples), "Samples loaded,", len(self.samples_test), "Test samples loaded")

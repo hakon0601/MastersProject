@@ -18,7 +18,7 @@ INCLUDED_VESSELS = ["ferry", "nansen", "sejong", "speedboat", "svendborgmaersk",
 # INCLUDED_VESSELS = ["speedboat", "tanker"]
 # INCLUDED_VESSELS = ["ferry", "speedboat", "tanker", "sub"]
 TEST_PERCENTAGE = 0.1
-SAMPLING_RATE = 1024
+SAMPLING_RATE = 300
 NR_OF_FILES = 85
 # 85 files in total
 SAMPLES_PR_FILE = 100

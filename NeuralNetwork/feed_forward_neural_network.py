@@ -39,7 +39,6 @@ class FeedForwardNN(NeuralNetworkBase):
             W = tf.Variable(tf.random_normal([self.layers_size[i], self.layers_size[i+1]]))
             self.weights.append(W)
 
-        # TODO fix bias support
         self.bias = []
         if self.enable_bias:
             for layer_size in self.layers_size[1:]:
@@ -66,7 +65,6 @@ class FeedForwardNN(NeuralNetworkBase):
         tf.scalar_summary("accuracy", self.accuracy)
 
         self.summary_op = tf.merge_all_summaries()
-
 
         self.init = tf.global_variables_initializer()
 
@@ -136,7 +134,7 @@ class FeedForwardNN(NeuralNetworkBase):
 
         self.h_fc1_drop = tf.nn.dropout(self.activations[-1], self.keep_prob)
         if self.enable_bias:
-            return tf.matmul(self.h_fc1_drop, self.weights[-1] + self.bias[-1])
+            return tf.matmul(self.h_fc1_drop, self.weights[-1]) + self.bias[-1]
         else:
             return tf.matmul(self.h_fc1_drop, self.weights[-1])
 
@@ -150,23 +148,3 @@ class FeedForwardNN(NeuralNetworkBase):
             for j in range(len(self.bias)):
                 print("Bias weights layer: ", j)
                 print(self.sess.run(self.bias[j]))
-
-    def predict_one_sample(self, sample):
-        print(self.sess.run(self.predict_op, feed_dict={self.layer_tensors[0]: [sample]}))
-
-
-'''
-|1 0| * |1 1 1| = |1 1 1|
-      * |1 1 1| =
-
-|1 1 1| *   |1 1| = |3 3|
-            |1 1|
-            |1 1|
-
-|0 1| * |1 1 1| = |1 1 1|
-      * |1 1 1| =
-
-|1 1 1| *   |1 1| = |3 3|
-            |1 1|
-            |1 1|
-'''

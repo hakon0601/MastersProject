@@ -19,7 +19,7 @@ class STFT(FeatureExtractorBase):
             processed_sample = librosa.stft(sample, self.fft_window_size) # Creates an array of touples, complex values? fix #TODO time-freq?
             a = np.abs(processed_sample) # the magnitude of frequency bin f at frame t
             b = np.angle(processed_sample) # the phase of frequency bin f at frame t
-            c = a.flatten() + b.flatten() # #TODO find a good way to do this
+            c = a.flatten() + b.flatten()
 
             processed_samples.append(c)
             sys.stdout.write("\rExtracting features %d%%" % floor((i + 1) * (100/len(samples))))

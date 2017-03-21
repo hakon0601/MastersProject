@@ -14,7 +14,7 @@ class WaveletTransform(FeatureExtractorBase):
         for i in range(len(samples)):
             sample = samples[i]
             cA, cD = pywt.dwt(sample, 'db2')
-            c = cA + cD # #TODO find a good way to do this
+            c = cA + cD
 
             processed_samples.append(c)
             sys.stdout.write("\rExtracting features %d%%" % floor((i + 1) * (100/len(samples))))
