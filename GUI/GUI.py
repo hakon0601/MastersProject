@@ -25,6 +25,7 @@ class GUI(tk.Tk):
                   "Basic RNN Cell",
                   "GRU Cell"
                   ]
+    pooling_types = ["Max Pooling", "Average Pooling"]
 
 
     def __init__(self, *args, **kwargs):
@@ -84,6 +85,9 @@ class GUI(tk.Tk):
         elif NNtype == self.neural_network_types[0]:
             neural_network = convolutional_neural_network.ConvolutionalNN(hidden_layers=list(map(int, self.hidden_layers_entry.get().split())),
                                                                           activation_functions_type=list(map(int, self.activation_functions_entry.get().split())),
+                                                                          cnn_filters=list(map(int, self.cnn_filters_entry.get().split())),
+                                                                          cnn_channels=list(map(int, self.cnn_channels_entry.get().split())),
+                                                                          pooling_type=self.pooling_types.index(self.pooling_box.get()),
                                                                           enable_bias=True if self.bias_box.get() == "True" else False,
                                                                           learning_rate=float(self.learning_rate_entry.get()),
                                                                           dropout_rate=float(self.dropout_rate_entry.get()),
@@ -98,6 +102,18 @@ class GUI(tk.Tk):
                                                                   cell_type=self.cell_types.index(self.cell_type_box.get()),
                                                                   time_related_steps=int(self.time_related_steps_entry.get()),
                                                                   epochs=int(self.training_iterations_entry.get()))
+        if isinstance(neural_network, convolutional_neural_network.ConvolutionalNN):
+            if not isinstance(feature_extractor, spectrogram.Spectrogram):
+                print("Only the spectrogram FE scheme can be used with the CNN")
+                return
+            # elif SAMPLING_RATE*SAMPLE_LENGTH != 1024:
+            #     print("The sampling rate * sample length has to be 1024")
+            #     return
+            else:
+                cnn_output_w, cnn_output_h = neural_network.calculate_cnn_output_size(original_w=32, original_h=16)
+                if not (cnn_output_w).is_integer() or not (cnn_output_h).is_integer():
+                    print("Illegal configuration, try changing some filters or channels")
+                    return
 
         self.main_program.run(feature_extractor=feature_extractor, neural_network=neural_network, data_loader=data_loader)
 
@@ -150,6 +166,10 @@ class GUI(tk.Tk):
         hidden_layers_value = tk.StringVar()
         hidden_layers_value.set(HIDDEN_LAYERS)
         self.hidden_layers_entry = tk.Entry(self, textvariable=hidden_layers_value, width=32)
+
+        self.pooling_label = tk.Label(self, text="Pooling scheme")
+        self.pooling_value = tk.StringVar()
+        self.pooling_box = self.combo(self, self.pooling_types, self.pooling_value)
 
         self.cnn_filters_label = tk.Label(self, text="CNN filters")
         cnn_filters_value = tk.StringVar()
@@ -217,13 +237,17 @@ class GUI(tk.Tk):
         self.activation_functions_label.grid(row=5, column=3)
 
         if index == 0:
+
             self.cnn_filters_label.grid(row=6, column=3)
             self.cnn_filters_entry.grid(row=6, column=4)
             self.cnn_channels_label.grid(row=7, column=3)
             self.cnn_channels_entry.grid(row=7, column=4)
             self.DCL_size_label.grid(row=8, column=3)
             self.DCL_size_entry.grid(row=8, column=4)
-            self.start_button.grid(row=9, column=2)
+            self.pooling_label.grid(row=9, column=3)
+            self.pooling_box.grid(row=9, column=4)
+            self.start_button.grid(row=10, column=2)
+
             self.hidden_layers_label.grid_forget()
             self.hidden_layers_entry.grid_forget()
             self.cell_type_label.grid_forget()
@@ -242,6 +266,8 @@ class GUI(tk.Tk):
             self.cnn_channels_entry.grid_forget()
             self.cnn_filters_label.grid_forget()
             self.cnn_filters_entry.grid_forget()
+            self.pooling_label.grid_forget()
+            self.pooling_box.grid_forget()
             self.DCL_size_label.grid_forget()
             self.DCL_size_entry.grid_forget()
         elif index == 2:
@@ -255,6 +281,8 @@ class GUI(tk.Tk):
             self.cnn_channels_entry.grid_forget()
             self.cnn_filters_label.grid_forget()
             self.cnn_filters_entry.grid_forget()
+            self.pooling_label.grid_forget()
+            self.pooling_box.grid_forget()
             self.DCL_size_label.grid_forget()
             self.DCL_size_entry.grid_forget()
 
@@ -268,6 +296,7 @@ class GUI(tk.Tk):
         x = (ws/2) - (w/2)
         y = (hs/2) - (h/2)
         self.geometry('%dx%d+%d+%d' % (w, h, x, y))
+
 
 
 if __name__ == "__main__":

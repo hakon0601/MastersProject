@@ -6,6 +6,7 @@ from FeatureExtraction.feature_extractor_base import FeatureExtractorBase
 
 class SpectralDensityEstimation(FeatureExtractorBase):
     def __init__(self, ):
+        self.output_size = 0
         pass
 
     def extract_features(self, samples):

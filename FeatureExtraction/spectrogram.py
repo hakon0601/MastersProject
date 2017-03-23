@@ -10,13 +10,14 @@ plt.ioff()
 
 class Spectrogram(FeatureExtractorBase):
     def __init__(self, ):
+        self.output_size = 0
         pass
 
     def extract_features(self, samples):
         processed_samples = []
         for i in range(len(samples)):
             A = plt.specgram(samples[i], NFFT=2**6 - 1, Fs=SAMPLING_RATE, noverlap=0) #32*16
-            spectrogram_dimensions = (len(A[0]), len(A[0][0]))
+            self.output_size = (len(A[0]), len(A[0][0]))
             processed_samples.append(A[0].flatten())
 
             sys.stdout.write("\rExtracting features %d%%" % floor((i + 1) * (100/len(samples))))
