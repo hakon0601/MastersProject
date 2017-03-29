@@ -18,4 +18,5 @@ class SpectralDensityEstimation(FeatureExtractorBase):
         sys.stdout.write("\rExtracting features %d%%" % floor((i + 1) * (100/len(samples))))
         sys.stdout.flush()
         print()
+        self.output_size = len(processed_samples[0])
         return processed_samples

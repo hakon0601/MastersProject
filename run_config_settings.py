@@ -14,7 +14,7 @@ LOG_PATH = "/tmp/tensorflow/mastersproject"
 
 
 NR_OF_CLASSES = 7
-INCLUDED_VESSELS = ["ferry", "nansen", "sejong", "speedboat", "svendborgmaersk", "tanker", "sub"]
+INCLUDED_VESSELS = ["ferry", "frigate", "destroyer", "speedboat", "container", "tanker", "sub"]
 # INCLUDED_VESSELS = ["speedboat", "tanker"]
 # INCLUDED_VESSELS = ["ferry", "speedboat", "tanker", "sub"]
 TEST_PERCENTAGE = 0.1
@@ -29,7 +29,7 @@ N_MFCC = 20
 
 # Only one of these can be true at once
 # Describes what part of the dataset is being used as test data
-USE_WHOLE_FILE_AS_TEST = False # TODO fix the other two options for recurrent networks
+USE_WHOLE_FILE_AS_TEST = False # This is the only available option for recurrent networks
 USE_END_OF_FILE_AS_TEST = True
 USE_RANDOM_SAMPLES_AS_TEST = False
 
@@ -43,6 +43,7 @@ RESET_PICKLE = False
 MOCK_DATA = False
 USE_PRELOADED_DATA = True
 
+
 # if NR_OF_CLASSES != len(INCLUDED_VESSELS):
 #     raise ValueError
 
@@ -52,14 +53,14 @@ USE_PRELOADED_DATA = True
 BATCH_SIZE = 10
 EPOCS = ceil(NR_OF_FILES * SAMPLES_PR_FILE / BATCH_SIZE) # To ensure all samples being used in training
 EPOCS = 100
-LEARNING_RATE = 0.0001
-BIAS_ENABLED = False
+LEARNING_RATE = 0.001
+BIAS_ENABLED = True
 DROPOUT_RATE = 0.9
 
-ACTIVATION_FUNCTIONS = "2 2 2"
-HIDDEN_LAYERS = "512 256 256"
-CNN_FILTERS = "5 5 5"
-CNN_CHANNELS = "32 64 64"
+ACTIVATION_FUNCTIONS = "2 2"
+HIDDEN_LAYERS = "256 128"
+CNN_FILTERS = "5 5"
+CNN_CHANNELS = "32 64"
 DCL_SIZE = 1024
 PADDING = 2
 POOLING_STRIDE = 2

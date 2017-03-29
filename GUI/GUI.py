@@ -106,14 +106,16 @@ class GUI(tk.Tk):
             if not isinstance(feature_extractor, spectrogram.Spectrogram):
                 print("Only the spectrogram FE scheme can be used with the CNN")
                 return
-            # elif SAMPLING_RATE*SAMPLE_LENGTH != 1024:
-            #     print("The sampling rate * sample length has to be 1024")
-            #     return
             else:
                 cnn_output_w, cnn_output_h = neural_network.calculate_cnn_output_size(original_w=32, original_h=16)
                 if not (cnn_output_w).is_integer() or not (cnn_output_h).is_integer():
                     print("Illegal configuration, try changing some filters or channels")
                     return
+        if isinstance(feature_extractor, spectrogram.Spectrogram) and \
+                not isinstance(neural_network, convolutional_neural_network.ConvolutionalNN):
+            print("Only the CNN scheme can be used with the Spectrogram")
+            return
+
 
         self.main_program.run(feature_extractor=feature_extractor, neural_network=neural_network, data_loader=data_loader)
 

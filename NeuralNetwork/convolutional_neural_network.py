@@ -24,7 +24,7 @@ class ConvolutionalNN(NeuralNetworkBase):
     def construct_neural_network(self, input_size=1000):
         self.original_input_size = input_size
         # Create the model
-        self.input_tensor = tf.placeholder(tf.float32, [None, input_size[0] * input_size[1]]) # TODO check if this is right, was 512
+        self.input_tensor = tf.placeholder(tf.float32, [None, input_size[0] * input_size[1]])
         self.output_tensor = tf.placeholder(tf.float32, [None, NR_OF_CLASSES])
 
         self.activation_model = self.model()

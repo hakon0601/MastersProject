@@ -81,8 +81,7 @@ class FeedForwardNN(NeuralNetworkBase):
                 self.sess.run(self.train_step, feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys, self.keep_prob: self.dropout_rate})
                 # writer.add_summary(summary, epoch * nr_of_batches_to_cover_all_samples + j)
 
-            if epoch % 1 == 0:
-                self.test_accuracy_of_solution(samples, labels, samples_test, labels_test)
+            self.test_accuracy_of_solution(samples, labels, samples_test, labels_test)
         print("Optimization Finished!")
 
 

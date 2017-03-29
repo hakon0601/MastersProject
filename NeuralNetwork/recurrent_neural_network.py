@@ -102,7 +102,7 @@ class RecurrentNN(NeuralNetworkBase):
 
         output, state = tf.nn.dynamic_rnn(multilayer_cell, self.input_tensor, dtype=tf.float32)
         output = tf.transpose(output, [1, 0, 2])
-        last = tf.gather(output, int(output.get_shape()[0]) - 1) # TODO this may be a bottleneck (memory)
+        last = tf.gather(output, int(output.get_shape()[0]) - 1) # This may be a bottleneck (memory)
 
         last_weights = tf.Variable(tf.random_normal([self.layers_size[-2], self.layers_size[-1]]))
         if self.enable_bias:
@@ -112,6 +112,11 @@ class RecurrentNN(NeuralNetworkBase):
 
     def reshape_samples(self, samples):
         # Cut of the rest of each sample after reshaping
+        if self.layers_size[0]*self.time_related_steps > len(samples[0]):
+            print(self.layers_size[0], len(samples[0]))
+            print("Too many time-related steps, try with a shorter sample length")
+            exit()
+        # self.layers_size[0]*self.time_related_steps < len(samples[0])
         samples = np.array([sample[:self.layers_size[0]*self.time_related_steps] for sample in samples])
         return samples.reshape((len(samples), self.time_related_steps, self.layers_size[0]))
 
