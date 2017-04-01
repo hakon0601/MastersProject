@@ -24,7 +24,6 @@ class FeedForwardNN(NeuralNetworkBase):
         output_size=NR_OF_CLASSES
         self.layers_size = [input_size] + self.hidden_layers + [output_size]
         self.layer_tensors = []
-        # self.input_tensor = tf.placeholder(tf.float32, [None, input_size])
 
         # Creating a placeholder variable for keeping the values in each layer
         for layer_size in self.layers_size:
@@ -56,11 +55,6 @@ class FeedForwardNN(NeuralNetworkBase):
         self.train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cost)
         self.predict_op = self.model()
 
-        # tf.scalar_summary("cost", self.cost)
-        # tf.scalar_summary("accuracy", self.accuracy)
-        #
-        # self.summary_op = tf.merge_all_summaries()
-
         self.init = tf.global_variables_initializer()
 
     def train_neural_network(self, samples, labels, samples_test, labels_test):
@@ -68,10 +62,7 @@ class FeedForwardNN(NeuralNetworkBase):
         self.sess.run(self.init)
         # self.test_accuracy_of_solution(samples, labels, samples_test, labels_test)
 
-        # writer = tf.train.SummaryWriter(LOG_PATH, graph=tf.get_default_graph())
-
         for epoch in range(self.epochs):
-            avg_cost = 0.
             nr_of_batches_to_cover_all_samples = int(len(samples)/BATCH_SIZE)
             sys.stdout.write("\rTraining network %02d%%" % floor((epoch + 1) * (100 / self.epochs)))
             sys.stdout.flush()
@@ -79,8 +70,7 @@ class FeedForwardNN(NeuralNetworkBase):
                 # batch_xs, batch_ys = self.get_next_batch(i*BATCH_SIZE, BATCH_SIZE, samples, labels)
                 batch_xs, batch_ys = self.get_random_batch(BATCH_SIZE, samples, labels)
                 self.sess.run(self.train_step, feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys, self.keep_prob: self.dropout_rate})
-                # writer.add_summary(summary, epoch * nr_of_batches_to_cover_all_samples + j)
-
+            print("hola", self.sess.run(self.cost, feed_dict={self.layer_tensors[0]: batch_xs, self.layer_tensors[-1]: batch_ys, self.keep_prob: self.dropout_rate}))
             self.test_accuracy_of_solution(samples, labels, samples_test, labels_test)
         print("Optimization Finished!")
 
